@@ -24,7 +24,7 @@ Proyecto para el Meta Global AI Developer Hackathon (10 días). Priorizar un flu
 ## Estructura del repositorio
 
 ```text
-backend/         Spring Boot (Java 21), arquitectura hexagonal
+backend/         Spring Boot 4.1 (Java 21), arquitectura hexagonal
 vision-service/  Python + FastAPI, solo CPU: cliente de SAM 3.1 (Meta API), difuminado, área, comparación antes/después
 web/             React + TypeScript + Vite + MapLibre (mapas de OpenStreetMap)
 infra/           docker-compose de desarrollo (PostGIS) y de producción
@@ -44,7 +44,7 @@ docker compose -f infra/docker-compose.yml --env-file .env up -d
 
 # Backend
 cd backend && ./mvnw spring-boot:run
-cd backend && ./mvnw verify          # tests + ArchUnit
+cd backend && ./mvnw verify          # tests + ArchUnit (Testcontainers: necesita Docker)
 
 # Vision service
 cd vision-service && uvicorn app.main:app --reload --port 8001
@@ -189,7 +189,7 @@ Red interna civic: civic-backend, civic-vision, civic-postgres (PostGIS), volume
 ## Convenciones
 
 - Código, identificadores y commits en **inglés**. Textos para el usuario en **español**.
-- Java 21, Spring Boot 3.x, records para value objects y DTOs.
+- Java 21, Spring Boot 4.1 (Jackson 3, starters modulares como `spring-boot-starter-webmvc`), records para value objects y DTOs. Indentación con tabs, como generó Initializr.
 - Commits con Conventional Commits (`feat:`, `fix:`, `test:`, `ci:`...).
 - Tests: JUnit 5 + Testcontainers (PostGIS) en backend, pytest en vision-service, Vitest en web.
 - **Los tests nunca llaman a las APIs reales de Meta.** Usar los fakes de los puertos y fixtures de `eval/`.
