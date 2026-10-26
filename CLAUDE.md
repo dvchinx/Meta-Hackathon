@@ -36,30 +36,31 @@ deploy/          NO es parte del repo (está en .gitignore): copia local de la c
 
 ## Comandos
 
-> TODO: completar cuando exista cada módulo. Mantener esta sección actualizada.
+> Mantener esta sección actualizada. En la máquina del usuario los puertos 5432 y 8080 están ocupados por otro proyecto: en local se usan 5433 (PostGIS) y `BACKEND_PORT` (8081 en `.env.example`).
 
 ```bash
 # Infraestructura local (PostgreSQL + PostGIS en 127.0.0.1:5433)
 docker compose -f infra/docker-compose.yml --env-file .env up -d
 
-# Backend
+# Backend (lee ../.env)
 cd backend && ./mvnw spring-boot:run
 cd backend && ./mvnw verify          # tests + ArchUnit (Testcontainers: necesita Docker)
 
-# Vision service
-cd vision-service && uvicorn app.main:app --reload --port 8001
-cd vision-service && pytest
+# Vision service (Python 3.13+, venv local en .venv)
+cd vision-service && python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
+cd vision-service && .venv/bin/uvicorn app.main:app --reload --port 8001
+cd vision-service && .venv/bin/pytest && .venv/bin/ruff check . && .venv/bin/ruff format --check .
 
-# Web
+# Web (proxy de /api y /media al backend en BACKEND_PORT)
 cd web && npm run dev
-cd web && npm run lint && npm run typecheck && npm test
+cd web && npm run lint && npm run typecheck && npm test && npm run build
 
 # Evaluación (gasta créditos: ver "Presupuesto de créditos")
 cd eval && python run_eval.py --subset small
-
-# Stack completo de producción en local (para probar las imágenes)
-docker compose -f infra/docker-compose.prod.yml --env-file .env up --build
 ```
+
+Al cambiar dependencias de vision-service, regenerar `requirements.lock` (lo usa el Dockerfile) dentro de `python:3.13-slim`:
+`docker run --rm -v "$PWD":/src:ro python:3.13-slim sh -c "pip install -q /src >/dev/null && pip freeze --exclude vision-service"`.
 
 ## Backend: arquitectura hexagonal
 
@@ -158,9 +159,9 @@ Producción en el VPS **jesusflorez.cloud**. GitHub Actions construye las imáge
 
 ### Cómo está montado el VPS
 
-- El VPS ya corre muchos proyectos en **un compose compartido** (carpeta `deploy/` en el VPS; hay una copia local en `deploy/`, fuera de git). Ahí viven el contenedor **`personal-nginx`** (puertos 80/443) y `certbot`, con **un solo certificado SAN** para todos los subdominios.
+- El VPS ya corre muchos proyectos en **un compose compartido** (`~/deploy` del usuario root en el VPS; hay una copia local en `deploy/`, fuera de git). Ahí viven el contenedor **`personal-nginx`** (puertos 80/443) y `certbot`, con **un solo certificado SAN** para todos los subdominios.
 - Nuestro stack **no** entra en ese compose. Es un proyecto aparte (`/opt/civic-repairs/`, `infra/docker-compose.prod.yml`) con imágenes de GHCR, así CI solo toca lo nuestro.
-- `civic-backend` y `civic-web` se unen a la red de `personal-nginx` (red externa, nombre configurable con `PROXY_NETWORK`). PostgreSQL y vision-service quedan solo en una red interna. **Ningún contenedor publica puertos en el host.**
+- `civic-backend` y `civic-web` se unen a la red de `personal-nginx` (red externa `deploy_personal-network`, configurable con `PROXY_NETWORK`). PostgreSQL y vision-service quedan solo en una red interna. **Ningún contenedor publica puertos en el host.**
 
 ```text
 Internet → personal-nginx (TLS) → civic.jesusflorez.cloud
@@ -172,16 +173,19 @@ Red interna civic: civic-backend, civic-vision, civic-postgres (PostGIS), volume
 
 - Config de Nginx: `deploy/nginx/conf.d/civic.conf` (archivo propio, no se edita `default.conf`). Usa `resolver` + variable, así nginx arranca aunque nuestros contenedores no existan.
 - TLS: `deploy/civic-add-ssl-domain.sh` agrega `civic` al certificado SAN sin detener la suite. Requiere el registro A apuntando al VPS.
+- RAM: el VPS tiene 7,8 GB, unos 3,2 GB disponibles y **sin swap**. Nuestro stack tiene límites duros (`mem_limit`: backend 768 MB, PostGIS 384 MB, vision 384 MB, web 64 MB). No subirlos sin revisar `free -h` en el VPS.
 - **Cualquier cambio en `deploy/` se sube a mano al VPS. Al terminar, avisar al usuario qué archivos de `deploy/` cambiaron.** Nunca agregar `deploy/` al repo: contiene claves TLS y secretos de otros proyectos.
 
 ### GitHub Actions
 
-- `ci.yml` (pull requests y push): tests y linter por módulo, con filtros de rutas. Sin llamadas a Meta.
-- `deploy.yml` (push a `main`, tras CI verde):
-  1. Construye `ghcr.io/<owner>/civic-repairs-{backend,vision-service,web}` con etiquetas `sha-<commit>` y `latest` (`linux/amd64`).
-  2. Copia `infra/docker-compose.prod.yml` a `/opt/civic-repairs/` en el VPS.
-  3. Por SSH: `docker compose pull && docker compose up -d`, y luego comprueba la salud (`/actuator/health` del backend, `/health` de vision-service).
-- Secretos de GitHub: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`. Para subir a GHCR se usa `GITHUB_TOKEN`. Los secretos de la aplicación viven solo en `/opt/civic-repairs/.env` del VPS, **no** en GitHub.
+- `ci.yml` (pull requests, push a otras ramas y llamado desde `deploy.yml`): tests y linter de los tres módulos. Sin llamadas a Meta.
+- `deploy.yml` (push a `main`):
+  1. Corre `ci.yml`.
+  2. Construye `ghcr.io/dvchinx/civic-repairs-{backend,vision-service,web}` con etiquetas `sha-<commit>` y `latest` (`linux/amd64`).
+  3. Copia `infra/docker-compose.prod.yml` a `/opt/civic-repairs/docker-compose.yml` en el VPS.
+  4. Por SSH: `docker login` en GHCR con el `GITHUB_TOKEN` del job, `docker compose pull`, `docker logout`, `docker compose up -d`. Así funcionan paquetes privados sin dejar credenciales en el VPS.
+  5. Espera a que `civic-backend` esté `healthy` y prueba `https://civic.jesusflorez.cloud/`.
+- Secretos de GitHub: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`. Los secretos de la aplicación viven solo en `/opt/civic-repairs/.env` del VPS (plantilla: `.env.example`), **no** en GitHub.
 - Rollback: en el VPS, `IMAGE_TAG=sha-<anterior> docker compose up -d`.
 - Datos persistentes en volúmenes con nombre (`pgdata`, `media`). Nunca usar `docker compose down -v` en producción.
 - El VPS ya tiene mucha carga (Kafka, MySQL, varios Spring Boot). Ponerles límite de memoria a nuestros contenedores (`mem_limit`, `-XX:MaxRAMPercentage`).
@@ -219,6 +223,7 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 - [x] SAM 3.1 y Muse Spark disponibles en la Meta Model API (probado el 2026-10-26, ver `docs/meta-api.md`).
 - [x] Muse Spark acepta audio directamente.
 - [ ] Número de prueba de WhatsApp Cloud API y plantillas enviadas a aprobación.
-- [ ] VPS: RAM libre real y nombre exacto de la red de `personal-nginx` (`docker network ls`).
+- [x] VPS: red `deploy_personal-network`, ~3,2 GB de RAM disponibles, sin swap.
+- [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
 - [ ] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
-- [ ] Repositorio en GitHub; ¿paquetes de GHCR públicos o privados? (privados requieren `docker login ghcr.io` en el VPS con un token `read:packages`).
+- [ ] Primer despliegue: crear `/opt/civic-repairs/.env` en el VPS y los secretos `VPS_*` en GitHub.

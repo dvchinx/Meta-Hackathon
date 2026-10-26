@@ -43,7 +43,8 @@ Petición (imagen en base64; **probado** con una foto de un bache de 960×720):
     ]
   }],
   "stream": false,
-  "store": false
+  "store": false,
+  "metadata": { "include_confidence": "true", "mask_encoding": "one_bit" }
 }
 ```
 
@@ -58,11 +59,14 @@ Petición (imagen en base64; **probado** con una foto de un bache de 960×720):
 
   - `<Nf>`: índice del fotograma. Le siguen registros `id<|box|><|mask|>` separados por comas. Los ids pueden no ser consecutivos.
   - La caja está en píxeles de la imagen original. `w` y `h` son el tamaño de esa imagen.
-  - La máscara es `data=H,W,<enc><payload>`, con `~` (sin pérdida) o `!` (1 bit), y el payload en **base85**. **Observado:** H×W coincide con el tamaño de la caja (133×193 para una caja de 192×132), así que el raster está recortado a la caja y se coloca en `(x1, y1)`. Hay que confirmarlo al implementar el decodificador.
+  - La máscara es `data=H,W,<enc><payload>`, con `~` (sin pérdida) o `!` (1 bit). El raster está recortado a la caja y se coloca en `(x1, y1)` (confirmado visualmente sobre la foto).
   - El payload puede contener `;` y `,`: hay que leer `data=` como el último campo.
   - La confianza `c` solo aparece si se pide `include_confidence`.
   - Guía del formato: <https://dev.meta.ai/docs/sam/reading-segmentation>
-- Puede devolver varias detecciones anidadas para el mismo daño (en la prueba devolvió el bache y una región más amplia a su alrededor). Para el área hay que definir una regla, por ejemplo la máscara de mayor confianza o la unión de las máscaras.
+- **Decodificar con la librería oficial `meta-sam-parser`** (PyPI, de Meta). No decodificar el formato a mano: su licencia prohíbe la ingeniería inversa de los componentes de SAM. vision-service la usa en `app/sam/masks.py`.
+- Pedimos `metadata.mask_encoding: "one_bit"` (más pequeño; solo necesitamos máscaras binarias). Probado de punta a punta.
+- **Las máscaras de instancias no se solapan:** en la prueba del bache, SAM separó el hueco profundo y el área desgastada alrededor, y cada píxel pertenece a un solo objeto. El área del daño es la **unión** de todas las detecciones.
+- `"face"` también detecta caras de animales (en una prueba difuminó la cara de un burro). Difuminar de más es aceptable; lo peligroso sería difuminar de menos.
 
 ## Costo estimado por reporte
 
