@@ -1,0 +1,69 @@
+# Production stack on the VPS (/opt/civic-repairs/docker-compose.yml, copied there by the deploy workflow).
+# Secrets live only in /opt/civic-repairs/.env on the VPS.
+# civic-backend and civic-web join the network of the shared `personal-nginx` proxy; everything else stays internal.
+# No container publishes ports on the host.
+name: civic-repairs
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: civic-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  vision:
+    image: ghcr.io/dvchinx/civic-repairs-vision-service:${IMAGE_TAG:-latest}
+    container_name: civic-vision
+    restart: unless-stopped
+    env_file: .env
+    networks: [internal]
+    mem_limit: 384m
+
+  backend:
+    image: ghcr.io/dvchinx/civic-repairs-backend:${IMAGE_TAG:-latest}
+    container_name: civic-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      BACKEND_PORT: "8080"
+      VISION_SERVICE_URL: http://vision:8001
+      MEDIA_STORAGE_PATH: /data/media
+    volumes:
+      - media:/data/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vision:
+        condition: service_started
+    networks: [internal, proxy]
+    mem_limit: 768m
+
+  web:
+    image: ghcr.io/dvchinx/civic-repairs-web:${IMAGE_TAG:-latest}
+    container_name: civic-web
+    restart: unless-stopped
+    networks: [proxy]
+    mem_limit: 64m
+
+networks:
+  internal: {}
+  proxy:
+    external: true
+    name: ${PROXY_NETWORK:-deploy_personal-network}
+
+volumes:
+  pgdata:
+  media:

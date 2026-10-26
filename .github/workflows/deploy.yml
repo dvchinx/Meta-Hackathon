@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_PREFIX: ghcr.io/dvchinx/civic-repairs
+  APP_DIR: /opt/civic-repairs
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  images:
+    needs: ci
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [backend, vision-service, web]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:sha-${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    env:
+      TARGET: ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}
+      IMAGE_TAG: sha-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          printf 'Host *\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n' > ~/.ssh/config
+
+      - name: Copy compose file
+        run: |
+          ssh "$TARGET" "test -f $APP_DIR/.env || { echo 'Missing $APP_DIR/.env on the VPS'; exit 1; }"
+          scp infra/docker-compose.prod.yml "$TARGET:$APP_DIR/docker-compose.yml"
+
+      - name: Pull and start
+        run: |
+          # Short-lived login: GITHUB_TOKEN expires with this job, and we log out right after pulling.
+          echo "${{ secrets.GITHUB_TOKEN }}" | ssh "$TARGET" docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          ssh "$TARGET" "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose pull; status=\$?; docker logout ghcr.io; exit \$status"
+          ssh "$TARGET" "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose up -d --remove-orphans"
+
+      - name: Wait for the backend to be healthy
+        run: |
+          ssh "$TARGET" 'for i in $(seq 1 36); do
+              s=$(docker inspect -f "{{.State.Health.Status}}" civic-backend 2>/dev/null)
+              echo "civic-backend: $s"
+              [ "$s" = healthy ] && exit 0
+              sleep 5
+            done
+            docker logs --tail 80 civic-backend
+            exit 1'
+
+      - name: Smoke test through the public proxy
+        run: curl -fsS --retry 5 --retry-delay 3 -o /dev/null https://civic.jesusflorez.cloud/
