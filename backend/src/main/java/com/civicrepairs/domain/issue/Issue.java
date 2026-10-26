@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -23,32 +24,40 @@ public final class Issue {
 	private final DamageType damageType;
 	private final GeoPoint location;
 	private final Instant openedAt;
+	/** Responsible agency code; {@code null} when no rule covers the damage type (manual review). */
+	private final String agencyCode;
+	/** Public (blurred) photo shown on the map. */
+	private final UUID coverMediaId;
 	private IssueStatus status;
 	private int reportCount;
 	private final List<StatusTransition> transitions;
 
-	private Issue(UUID id, DamageType damageType, GeoPoint location, Instant openedAt, IssueStatus status,
-			int reportCount, List<StatusTransition> transitions) {
+	private Issue(UUID id, DamageType damageType, GeoPoint location, Instant openedAt, String agencyCode,
+			UUID coverMediaId, IssueStatus status, int reportCount, List<StatusTransition> transitions) {
 		this.id = Objects.requireNonNull(id, "id");
 		this.damageType = Objects.requireNonNull(damageType, "damageType");
 		this.location = Objects.requireNonNull(location, "location");
 		this.openedAt = Objects.requireNonNull(openedAt, "openedAt");
+		this.agencyCode = agencyCode;
+		this.coverMediaId = coverMediaId;
 		this.status = Objects.requireNonNull(status, "status");
 		this.reportCount = reportCount;
 		this.transitions = new ArrayList<>(transitions);
 	}
 
 	/** Opens an Issue from the first confirmed Report. */
-	public static Issue open(UUID id, DamageType damageType, GeoPoint location, String reportId, Instant at) {
-		var issue = new Issue(id, damageType, location, at, IssueStatus.REPORTED, 1, List.of());
+	public static Issue open(UUID id, DamageType damageType, GeoPoint location, String agencyCode, UUID coverMediaId,
+			String reportId, Instant at) {
+		var issue = new Issue(id, damageType, location, at, agencyCode, coverMediaId, IssueStatus.REPORTED, 1, List.of());
 		issue.transitions.add(new StatusTransition(null, IssueStatus.REPORTED, TransitionCause.CITIZEN_REPORT, reportId, at));
 		return issue;
 	}
 
 	/** Rebuilds an Issue from storage. No rules are checked: the stored history is the source of truth. */
 	public static Issue rehydrate(UUID id, DamageType damageType, GeoPoint location, Instant openedAt,
-			IssueStatus status, int reportCount, List<StatusTransition> transitions) {
-		return new Issue(id, damageType, location, openedAt, status, reportCount, transitions);
+			String agencyCode, UUID coverMediaId, IssueStatus status, int reportCount,
+			List<StatusTransition> transitions) {
+		return new Issue(id, damageType, location, openedAt, agencyCode, coverMediaId, status, reportCount, transitions);
 	}
 
 	/** A duplicate Report of the same damage was confirmed. */
@@ -108,6 +117,14 @@ public final class Issue {
 
 	public Instant openedAt() {
 		return openedAt;
+	}
+
+	public Optional<String> agencyCode() {
+		return Optional.ofNullable(agencyCode);
+	}
+
+	public Optional<UUID> coverMediaId() {
+		return Optional.ofNullable(coverMediaId);
 	}
 
 	public IssueStatus status() {

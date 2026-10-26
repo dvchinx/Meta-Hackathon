@@ -20,7 +20,7 @@ class IssueTest {
 	private static final GeoPoint CHAPINERO = new GeoPoint(4.6486, -74.0628);
 
 	private static Issue newIssue() {
-		return Issue.open(UUID.randomUUID(), DamageType.POTHOLE, CHAPINERO, "report-1", T0);
+		return Issue.open(UUID.randomUUID(), DamageType.POTHOLE, CHAPINERO, "IDU", UUID.randomUUID(), "report-1", T0);
 	}
 
 	private static Issue repairClaimedIssue() {
