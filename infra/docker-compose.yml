@@ -1,0 +1,24 @@
+# Local development infrastructure: PostgreSQL + PostGIS.
+# Media is stored on the filesystem (MEDIA_STORAGE_PATH), so no object storage is needed.
+# Usage (from the repo root): docker compose -f infra/docker-compose.yml --env-file .env up -d
+name: civic-repairs-dev
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-civic_repairs}
+      POSTGRES_USER: ${POSTGRES_USER:-civic}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-civic}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-civic} -d ${POSTGRES_DB:-civic_repairs}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
