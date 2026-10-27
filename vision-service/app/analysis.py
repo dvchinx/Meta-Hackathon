@@ -19,6 +19,8 @@ class DamageType(StrEnum):
     OTHER = "OTHER"
 
 
+JPEG_MAGIC = b"\xff\xd8\xff"
+
 # SAM noun phrases. OTHER has no concept: it goes to manual review without damage segmentation.
 DAMAGE_CONCEPTS: dict[DamageType, str | None] = {
     DamageType.POTHOLE: "pothole",
@@ -61,9 +63,13 @@ async def analyze(
     blur_faces: bool = True,
     blur_plates: bool = True,
 ) -> Analysis:
-    image = imaging.downscale(imaging.decode(photo), max_side)
+    original = imaging.decode(photo)
+    image = imaging.downscale(original, max_side)
     height, width = image.shape[:2]
-    jpeg = imaging.encode_jpeg(image, jpeg_quality)
+    # Re-encoding is not free: SAM dropped a borderline detection (c≈0.66) on a re-encoded copy of a photo it
+    # segmented fine as sent. JPEGs that need no downscaling go to SAM byte for byte.
+    send_as_is = image is original and photo.startswith(JPEG_MAGIC)
+    jpeg = photo if send_as_is else imaging.encode_jpeg(image, jpeg_quality)
 
     damage_concept = DAMAGE_CONCEPTS[damage_type]
     concepts = [damage_concept] if damage_concept else []

@@ -66,12 +66,16 @@ class MetaSamClient:
 
 
 class FakeSamClient:
-    """Deterministic stand-in: finds the damage as a centered ellipse and never finds faces or plates."""
+    """Deterministic stand-in: the damage is a centered ellipse and the whole frame counts as a face.
 
-    PRIVACY_CONCEPTS = {"face", "license plate"}
+    Without real segmentation we cannot know where faces are, so the fake anonymizes everything: a misconfigured
+    deployment (META_API_ENABLED=false) must never publish an unblurred photo.
+    """
 
     async def segment(self, jpeg: bytes, concept: str, width: int, height: int) -> SamResult:
-        if concept in self.PRIVACY_CONCEPTS:
+        if concept == "face":
+            return SamResult([Detection("0", Box(0, 0, width, height), np.ones((height, width), dtype=bool), 1.0)], 0)
+        if concept == "license plate":
             return SamResult([], 0)
         mask = np.zeros((height, width), dtype=np.uint8)
         center, axes = (width // 2, height // 2), (width // 6, height // 8)

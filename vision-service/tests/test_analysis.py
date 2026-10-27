@@ -25,9 +25,11 @@ class StubSam:
         self.by_concept = by_concept
         self.fail_on = fail_on
         self.calls: list[str] = []
+        self.sent: list[bytes] = []
 
     async def segment(self, jpeg, concept, width, height):
         self.calls.append(concept)
+        self.sent.append(jpeg)
         if concept == self.fail_on:
             raise SamError("boom")
         return SamResult(self.by_concept.get(concept, []), 1)
@@ -89,3 +91,23 @@ def test_large_photos_are_downscaled_before_segmentation():
     result = run(analyze(photo(1500, 2000), DamageType.POTHOLE, sam, max_side=1024, jpeg_quality=85))
 
     assert (result.width, result.height) == (1024, 768)
+
+
+def test_small_jpegs_reach_sam_byte_for_byte():
+    original = photo()
+    sam = StubSam({})
+
+    run(analyze(original, DamageType.POTHOLE, sam, max_side=1024, jpeg_quality=85))
+
+    assert all(sent == original for sent in sam.sent)
+
+
+def test_large_or_non_jpeg_photos_are_re_encoded():
+    big = photo(1500, 2000)
+    png = imaging.cv2.imencode(".png", imaging.decode(photo()))[1].tobytes()
+    sam = StubSam({})
+
+    run(analyze(big, DamageType.POTHOLE, sam, max_side=1024, jpeg_quality=85))
+    run(analyze(png, DamageType.POTHOLE, sam, max_side=1024, jpeg_quality=85))
+
+    assert all(sent.startswith(b"\xff\xd8\xff") and sent not in (big, png) for sent in sam.sent)

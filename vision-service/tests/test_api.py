@@ -30,6 +30,19 @@ def test_analyze_with_the_fake_client_costs_nothing():
     assert body["damage"]["detections"] == 1
     assert 0 < body["damage"]["areaFraction"] < 0.2
     assert body["usage"] == {"samImages": 0, "costUsd": 0.0}
+
+
+def test_fake_mode_never_publishes_an_unblurred_photo():
+    original = jpeg()
+    with TestClient(app) as client:
+        body = client.post(
+            "/v1/analyze", files={"image": ("p.jpg", original, "image/jpeg")}, data={"damage_type": "POTHOLE"}
+        ).json()
+
+    blurred = imaging.decode(base64.b64decode(body["blurredJpegBase64"])).astype(int)
+    source = imaging.decode(original).astype(int)
+    # Noise input: a fully anonymized frame differs strongly everywhere, not just in a region.
+    assert abs(blurred - source).mean() > 40
     assert imaging.decode(base64.b64decode(body["markedJpegBase64"])).shape == (300, 400, 3)
 
 
