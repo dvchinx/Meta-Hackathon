@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["damageType", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence"],
+  "properties": {
+    "damageType": { "type": "string", "enum": ["POTHOLE", "OPEN_MANHOLE", "DAMAGED_POLE", "RISKY_TREE", "OTHER"] },
+    "urgency": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+    "isValidUrbanDamage": { "type": "boolean" },
+    "locationHints": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "confidence": { "type": "number" }
+  }
+}

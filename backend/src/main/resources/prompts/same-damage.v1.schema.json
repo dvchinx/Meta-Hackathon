@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sameDamage", "confidence", "reason"],
+  "properties": {
+    "sameDamage": { "type": "boolean" },
+    "confidence": { "type": "number" },
+    "reason": { "type": "string" }
+  }
+}
