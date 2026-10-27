@@ -25,7 +25,10 @@ Notas de lo que necesitamos de la API. Lo marcado como **probado** se verificó 
 
 - Incluso con `reasoning_effort: "minimal"` el modelo gasta tokens razonando (unos 20 en un prompt trivial). Si `max_tokens` es muy bajo, la respuesta llega con `content: null` y `finish_reason: "length"`. Hay que dejar margen: `max_tokens` ≥ 300 para respuestas cortas, y más para el JSON de interpretación.
 - `usage` trae `prompt_tokens`, `completion_tokens`, `completion_tokens_details.reasoning_tokens` y `prompt_tokens_details.cached_tokens`. Con eso se calcula el costo de cada llamada.
-- Admite salidas estructuradas (JSON schema), llamadas a funciones y caché de prompts.
+- **Salidas estructuradas probadas:** `response_format: {type: "json_schema", json_schema: {name, strict: true, schema}}` en Chat Completions devuelve JSON válido contra el esquema. Igual validamos de nuestro lado (`MuseOutputParser`).
+- Usamos `max_completion_tokens` (`max_tokens` está deprecado) y `reasoning_effort: "low"`; `"none"` da 400 porque Muse Spark siempre razona.
+- Imágenes: parte `{"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}`. Una imagen de ~1024 px son unos 1.300–1.500 tokens.
+- **Costo medido de una interpretación** (foto de 960 px + texto): 1.526 tokens de entrada y 464 de salida, unos **$0.0039**.
 
 ## SAM 3.1: detalles probados
 
@@ -66,6 +69,7 @@ Petición (imagen en base64; **probado** con una foto de un bache de 960×720):
 - **Decodificar con la librería oficial `meta-sam-parser`** (PyPI, de Meta). No decodificar el formato a mano: su licencia prohíbe la ingeniería inversa de los componentes de SAM. vision-service la usa en `app/sam/masks.py`.
 - Pedimos `metadata.mask_encoding: "one_bit"` (más pequeño; solo necesitamos máscaras binarias). Probado de punta a punta.
 - **Las máscaras de instancias no se solapan:** en la prueba del bache, SAM separó el hueco profundo y el área desgastada alrededor, y cada píxel pertenece a un solo objeto. El área del daño es la **unión** de todas las detecciones.
+- **SAM es sensible a la re-codificación cerca de su umbral:** la misma foto devolvió el área desgastada alrededor del bache (c≈0,66) al enviarla tal cual, y no la devolvió con una copia re-codificada a calidad 85. vision-service manda los JPEG que no necesitan reducción byte por byte. Para antes/después, ambas fotos deben pasar por el mismo camino.
 - `"face"` también detecta caras de animales (en una prueba difuminó la cara de un burro). Difuminar de más es aceptable; lo peligroso sería difuminar de menos.
 
 ## Costo estimado por reporte

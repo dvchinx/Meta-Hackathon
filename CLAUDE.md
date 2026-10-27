@@ -42,9 +42,11 @@ deploy/          NO es parte del repo (está en .gitignore): copia local de la c
 # Infraestructura local (PostgreSQL + PostGIS en 127.0.0.1:5433)
 docker compose -f infra/docker-compose.yml --env-file .env up -d
 
-# Backend (lee ../.env)
+# Backend: solo spring-boot:run lee ../.env (los tests y el jar no lo leen nunca)
 cd backend && ./mvnw spring-boot:run
 cd backend && ./mvnw verify          # tests + ArchUnit (Testcontainers: necesita Docker)
+# Jar en local con el .env:
+cd backend && SPRING_CONFIG_IMPORT='optional:file:../.env[.properties]' java -jar target/backend-*.jar
 
 # Vision service (Python 3.13+, venv local en .venv)
 cd vision-service && python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'
@@ -110,8 +112,8 @@ Todos los modelos de Meta se consumen por la **Meta Model API** con API key (`mu
    Si `isValidUrbanDamage=false` o `confidence < 0.6`, el bot pide otra foto en lugar de registrar.
    Muse Spark acepta audio directamente: las notas de voz de WhatsApp van en la misma llamada, sin transcripción aparte.
 2. **Segmentación (SAM 3.1 vía API, orquestado por vision-service):** una llamada por concepto (daño, `face`, `license plate`). vision-service calcula localmente el área estimada (m²) y genera la versión difuminada.
-3. **Confirmación:** el bot envía el resumen con la imagen marcada. Solo después de que el usuario confirma se crea o actualiza el Issue.
-4. **Deduplicación:** `ST_DWithin` a 30 m + mismo `damageType` + similitud visual sobre un umbral configurable → se suma al Issue existente.
+3. **Confirmación:** el bot envía el resumen con la imagen marcada. Solo después de que el usuario confirma se crea o actualiza el Issue. El formulario web usa el mismo flujo (`POST /api/reports` y `POST /api/reports/{id}/confirmation`), que además sirve para probar todo sin WhatsApp.
+4. **Deduplicación:** `ST_DWithin` a 30 m + mismo `damageType` + Muse Spark compara las dos fotos difuminadas (`same-damage.v1`, confianza ≥ 0,7) → se suma al Issue existente. Si Muse no está disponible, se une al candidato más cercano.
 5. **Respuesta de la entidad (Muse Spark):** clasifica la respuesta en `RESOLVES`, `EVASIVE` o `NO_RESPONSE`.
 6. **Verificación antes/después:** proporción de áreas de las máscaras de SAM + juicio de Muse Spark con ambas imágenes superpuestas. Si no coinciden → `NEEDS_MORE_EVIDENCE`.
 
@@ -133,12 +135,15 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 - Antes de llamar a la API, filtrar todo lo que se pueda gratis: límite por número, medio repetido (hash), formato no soportado, mensaje sin foto.
 - Reducir las imágenes (lado máximo 1024 px, JPEG) antes de enviarlas.
 - Video: extraer 1 a 3 fotogramas con ffmpeg. Nunca enviar el video completo.
-- SAM: no pedir caras ni placas si Muse Spark ya indicó que la foto no tiene personas ni vehículos.
+- SAM: siempre se piden caras y placas (unos $0.005 por foto). Difuminar de más es barato; publicar una cara no.
 - Iterar prompts con un subconjunto pequeño de `eval/`. La evaluación completa se corre solo para las métricas finales.
 
 ## WhatsApp
 
-- Webhook **idempotente**: deduplicar por `message.id`, porque WhatsApp reintenta las entregas.
+- Webhook **idempotente**: deduplicar por `message.id` (tabla `processed_message`, solo ids), porque WhatsApp reintenta las entregas.
+- El webhook responde 200 de inmediato y procesa en memoria (`StripedMessageDispatcher`): en orden por remitente, en paralelo entre remitentes. **No hay outbox para los mensajes entrantes** a propósito: guardarlos exigiría almacenar el número en claro. Si el backend se reinicia a mitad de un mensaje, el ciudadano debe reenviarlo.
+- Los estados de entrega (`sent`, `delivered`, `failed` con código de error de Meta) solo se registran en el log, sin el número.
+- Sin `WHATSAPP_ACCESS_TOKEN`, las respuestas solo se registran en el log; sin `WHATSAPP_APP_SECRET`, el webhook rechaza toda entrega.
 - Validar la firma `X-Hub-Signature-256` de cada petición con el app secret.
 - El bot acepta los datos **en cualquier orden** y en un mismo mensaje. Solo pide lo que falta.
 - Ubicación: pin de WhatsApp que el usuario puede mover. No depender del GPS de la foto, porque WhatsApp elimina esos metadatos.
