@@ -12,13 +12,13 @@ export const STATUS_LABELS: Record<IssueStatus, string> = {
 
 /** Open statuses are warm, the only closed one is green: "the agency says so" never looks resolved. */
 export const STATUS_COLORS: Record<IssueStatus, string> = {
-  REPORTED: '#d62828',
-  FILED: '#f77f00',
-  AGENCY_RESPONDED: '#fcbf49',
-  REPAIR_CLAIMED: '#a663cc',
-  NEEDS_MORE_EVIDENCE: '#a663cc',
-  VERIFIED: '#2a9d8f',
-  REOPENED: '#9d0208',
+  REPORTED: '#d92d20',
+  FILED: '#e8590c',
+  AGENCY_RESPONDED: '#ca8a04',
+  REPAIR_CLAIMED: '#7a5af8',
+  NEEDS_MORE_EVIDENCE: '#7a5af8',
+  VERIFIED: '#16a34a',
+  REOPENED: '#7a1414',
 }
 
 export const DAMAGE_LABELS: Record<DamageType, string> = {

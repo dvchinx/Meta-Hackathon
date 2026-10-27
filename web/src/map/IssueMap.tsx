@@ -1,18 +1,9 @@
 import type { FeatureCollection, Point } from 'geojson'
-import * as maplibregl from 'maplibre-gl'
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
-// MapLibre 6 loads its worker by URL; let Vite bundle it (with its shared chunk) as an ES worker.
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { useEffect, useRef } from 'react'
 import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, reportsLabel, timeOpen } from '../issues/labels'
 import type { IssueSummary } from '../issues/types'
-
-// OpenFreeMap: free OpenStreetMap vector tiles, no API key.
-const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
-const BOGOTA: [number, number] = [-74.0817, 4.6097]
-
-maplibregl.setWorkerUrl(workerUrl)
+import { BOGOTA, STYLE_URL, maplibregl } from './maplibre'
 
 function toGeoJson(issues: IssueSummary[]): FeatureCollection<Point> {
   return {
@@ -25,27 +16,34 @@ function toGeoJson(issues: IssueSummary[]): FeatureCollection<Point> {
   }
 }
 
+function element<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string) {
+  const el = document.createElement(tag)
+  el.className = className
+  // textContent, never innerHTML: data comes from citizens.
+  if (text) el.textContent = text
+  return el
+}
+
 function popupContent(issue: IssueSummary): HTMLElement {
-  const root = document.createElement('div')
-  root.className = 'issue-popup'
-  const lines = [
-    DAMAGE_LABELS[issue.damageType],
-    STATUS_LABELS[issue.status],
-    `${reportsLabel(issue.reportCount)} · ${timeOpen(issue.openedAt)}`,
-    issue.agency ? `Responsable: ${issue.agency}` : null,
-  ]
+  const root = element('div', 'issue-popup')
   if (issue.photoUrl) {
-    const img = document.createElement('img')
+    const img = element('img', '')
     img.src = issue.photoUrl
-    img.alt = DAMAGE_LABELS[issue.damageType]
+    img.alt = `Foto del daño: ${DAMAGE_LABELS[issue.damageType]}`
     root.append(img)
   }
-  lines.forEach((text, i) => {
-    if (!text) return
-    const el = document.createElement(i === 0 ? 'strong' : 'p')
-    el.textContent = text // textContent, never innerHTML: data comes from citizens
-    root.append(el)
-  })
+  const body = element('div', 'issue-popup-body')
+  body.append(element('div', 'issue-popup-title', DAMAGE_LABELS[issue.damageType]))
+
+  const status = element('div', 'issue-popup-status')
+  const dot = element('span', 'dot')
+  dot.style.background = STATUS_COLORS[issue.status]
+  status.append(dot, document.createTextNode(STATUS_LABELS[issue.status]))
+  body.append(status)
+
+  body.append(element('div', 'issue-popup-meta', `${reportsLabel(issue.reportCount)} · ${timeOpen(issue.openedAt)}`))
+  if (issue.agency) body.append(element('div', 'issue-popup-meta', `Responsable: ${issue.agency}`))
+  root.append(body)
   return root
 }
 
@@ -86,7 +84,7 @@ export function IssueMap({ issues }: { issues: IssueSummary[] }) {
         const id = event.features?.[0]?.properties?.id as string | undefined
         const issue = id ? issuesById.current.get(id) : undefined
         if (!issue) return
-        new maplibregl.Popup({ maxWidth: '280px' })
+        new maplibregl.Popup({ maxWidth: '260px', offset: 12 })
           .setLngLat([issue.longitude, issue.latitude])
           .setDOMContent(popupContent(issue))
           .addTo(instance)
