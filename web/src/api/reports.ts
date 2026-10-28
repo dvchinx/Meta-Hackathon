@@ -1,8 +1,11 @@
-import type { DamageType } from '../issues/types'
-import { reporterToken } from '../report/reporterToken'
+import type { DamageType, IssueStatus } from '../issues/types'
+import { parseJson, postJson } from './http'
+
+export { ApiError as ReportApiError } from './http'
 
 export type AnalysisOutcome = 'AWAITING_CONFIRMATION' | 'PHOTO_REJECTED' | 'MANUAL_REVIEW' | 'MODELS_UNAVAILABLE'
 export type Urgency = 'LOW' | 'MEDIUM' | 'HIGH'
+export type ReportStatus = 'COLLECTING' | 'ANALYZING' | 'AWAITING_CONFIRMATION' | 'CONFIRMED' | 'CANCELLED' | 'MANUAL_REVIEW'
 
 export interface ReportAnalysis {
   reportId: string
@@ -23,30 +26,24 @@ export interface ReportConfirmation {
   reportCount: number
 }
 
-/** Error from the API, with a Spanish message safe to show. */
-export class ReportApiError extends Error {
-  readonly code: string
-
-  constructor(code: string, message: string) {
-    super(message)
-    this.code = code
-  }
+export interface MyReport {
+  reportId: string
+  reportStatus: ReportStatus
+  createdAt: string
+  damageType: DamageType | null
+  summary: string | null
+  latitude: number
+  longitude: number
+  issueId: string | null
+  issueStatus: IssueStatus | null
+  issueReportCount: number
+  photoUrl: string | null
 }
 
-const GENERIC = 'No pudimos enviar el reporte. Revisa tu conexión e intenta de nuevo.'
-
-async function parse<T>(response: Response): Promise<T> {
-  if (response.ok) return (await response.json()) as T
-  let code = `HTTP_${response.status}`
-  let message = GENERIC
-  try {
-    const body = (await response.json()) as { code?: string; message?: string }
-    if (body.code) code = body.code
-    if (body.message) message = body.message
-  } catch {
-    // Not a JSON error body: keep the generic message.
-  }
-  throw new ReportApiError(code, message)
+export interface Endorsement {
+  issueId: string
+  counted: boolean
+  reportCount: number
 }
 
 export interface NewReport {
@@ -56,26 +53,26 @@ export interface NewReport {
   text?: string
 }
 
+/** The session cookie identifies the citizen; the backend only accepts verified accounts. */
 export async function submitReport(report: NewReport, signal?: AbortSignal): Promise<ReportAnalysis> {
   const form = new FormData()
   form.append('photo', report.photo)
   form.append('latitude', String(report.latitude))
   form.append('longitude', String(report.longitude))
   if (report.text?.trim()) form.append('text', report.text.trim())
-  const response = await fetch('/api/reports', {
-    method: 'POST',
-    body: form,
-    headers: { 'X-Reporter-Token': reporterToken() },
-    signal,
-  })
-  return parse<ReportAnalysis>(response)
+  return parseJson<ReportAnalysis>(await fetch('/api/reports', { method: 'POST', body: form, signal }))
 }
 
 export async function confirmReport(reportId: string, accepted: boolean): Promise<ReportConfirmation> {
-  const response = await fetch(`/api/reports/${encodeURIComponent(reportId)}/confirmation`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Reporter-Token': reporterToken() },
-    body: JSON.stringify({ accepted }),
-  })
-  return parse<ReportConfirmation>(response)
+  return parseJson<ReportConfirmation>(
+    await postJson(`/api/reports/${encodeURIComponent(reportId)}/confirmation`, { accepted }),
+  )
+}
+
+export async function fetchMyReports(signal?: AbortSignal): Promise<MyReport[]> {
+  return parseJson<MyReport[]>(await fetch('/api/me/reports', { signal, headers: { Accept: 'application/json' } }))
+}
+
+export async function endorseIssue(issueId: string): Promise<Endorsement> {
+  return parseJson<Endorsement>(await postJson(`/api/issues/${encodeURIComponent(issueId)}/endorsements`))
 }

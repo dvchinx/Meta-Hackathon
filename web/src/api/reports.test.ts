@@ -6,7 +6,7 @@ afterEach(() => vi.unstubAllGlobals())
 const photo = new File([new Uint8Array([0xff, 0xd8])], 'hueco.jpg', { type: 'image/jpeg' })
 
 describe('submitReport', () => {
-  it('sends photo, location, text and the reporter token as multipart', async () => {
+  it('sends photo, location and text as multipart (the session cookie identifies the citizen)', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: 'r1' }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -18,7 +18,7 @@ describe('submitReport', () => {
     expect(body.get('photo')).toBeInstanceOf(File)
     expect(body.get('latitude')).toBe('4.65')
     expect(body.get('text')).toBe('muy profundo')
-    expect(init.headers['X-Reporter-Token']).toMatch(/^[0-9a-f]{48}$/)
+    expect(init.headers).toBeUndefined()
   })
 
   it('omits empty text', async () => {
@@ -50,16 +50,14 @@ describe('submitReport', () => {
 })
 
 describe('confirmReport', () => {
-  it('posts the answer with the same reporter token', async () => {
-    const fetchMock = vi.fn().mockImplementation(async () => new Response('{}', { status: 200 }))
+  it('posts the answer as JSON', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    await submitReport({ photo, latitude: 4.65, longitude: -74.06 })
     await confirmReport('abc', true)
 
-    const [url, init] = fetchMock.mock.calls[1]
+    const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe('/api/reports/abc/confirmation')
     expect(JSON.parse(init.body)).toEqual({ accepted: true })
-    expect(init.headers['X-Reporter-Token']).toBe(fetchMock.mock.calls[0][1].headers['X-Reporter-Token'])
   })
 })

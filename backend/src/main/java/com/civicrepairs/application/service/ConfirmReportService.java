@@ -6,6 +6,7 @@ import com.civicrepairs.application.port.out.AgencyRepositoryPort;
 import com.civicrepairs.application.port.out.GeoQueryPort;
 import com.civicrepairs.application.port.out.IssueRepositoryPort;
 import com.civicrepairs.application.port.out.LanguageModelPort;
+import com.civicrepairs.application.port.out.MediaContent;
 import com.civicrepairs.application.port.out.MediaStoragePort;
 import com.civicrepairs.application.port.out.ModelUnavailableException;
 import com.civicrepairs.application.port.out.ReportRepositoryPort;
@@ -111,8 +112,16 @@ class ConfirmReportService implements ConfirmReportUseCase {
 			if (cover.isEmpty()) {
 				continue;
 			}
+			MediaContent existing;
 			try {
-				var verdict = languageModel.sameDamage(media.load(cover.get()), candidate);
+				existing = media.load(cover.get());
+			} catch (RuntimeException e) {
+				// A lost or unreadable cover photo must not block new reports; the candidate just cannot be compared.
+				log.warn("Cover photo of Issue {} unreadable ({}); skipping visual comparison", issueId, e.getMessage());
+				continue;
+			}
+			try {
+				var verdict = languageModel.sameDamage(existing, candidate);
 				if (verdict.sameDamage() && verdict.confidence() >= settings.sameDamageMinConfidence()) {
 					return Optional.of(issueId);
 				}

@@ -3,7 +3,11 @@ import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
 import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, reportsLabel, timeOpen } from '../issues/labels'
 import type { IssueSummary } from '../issues/types'
+import { icons } from '../ui/icons'
 import { BOGOTA, STYLE_URL, maplibregl } from './maplibre'
+
+/** Resolves with the new count, or null when nothing changed (not signed in, error). */
+export type EndorseHandler = (issue: IssueSummary) => Promise<{ counted: boolean; reportCount: number } | null>
 
 function toGeoJson(issues: IssueSummary[]): FeatureCollection<Point> {
   return {
@@ -24,7 +28,17 @@ function element<K extends keyof HTMLElementTagNameMap>(tag: K, className: strin
   return el
 }
 
-function popupContent(issue: IssueSummary): HTMLElement {
+function iconElement(name: keyof typeof icons): HTMLSpanElement {
+  const icon = element('span', 'icon')
+  icon.style.width = '16px'
+  icon.style.height = '16px'
+  icon.style.maskImage = `url("${icons[name]}")`
+  icon.style.webkitMaskImage = `url("${icons[name]}")`
+  icon.setAttribute('aria-hidden', 'true')
+  return icon
+}
+
+function popupContent(issue: IssueSummary, onEndorse: EndorseHandler): HTMLElement {
   const root = element('div', 'issue-popup')
   if (issue.photoUrl) {
     const img = element('img', '')
@@ -41,8 +55,28 @@ function popupContent(issue: IssueSummary): HTMLElement {
   status.append(dot, document.createTextNode(STATUS_LABELS[issue.status]))
   body.append(status)
 
-  body.append(element('div', 'issue-popup-meta', `${reportsLabel(issue.reportCount)} · ${timeOpen(issue.openedAt)}`))
+  const meta = element('div', 'issue-popup-meta', `${reportsLabel(issue.reportCount)} · ${timeOpen(issue.openedAt)}`)
+  body.append(meta)
   if (issue.agency) body.append(element('div', 'issue-popup-meta', `Responsable: ${issue.agency}`))
+
+  if (issue.status !== 'VERIFIED') {
+    const button = element('button', 'button button-secondary issue-popup-action')
+    button.type = 'button'
+    button.append(iconElement('eye'), document.createTextNode('Yo también lo vi'))
+    button.addEventListener('click', () => {
+      button.disabled = true
+      void onEndorse(issue).then((result) => {
+        if (!result) {
+          button.disabled = false
+          return
+        }
+        meta.textContent = `${reportsLabel(result.reportCount)} · ${timeOpen(issue.openedAt)}`
+        button.classList.add('is-done')
+        button.replaceChildren(iconElement('checkCircle'), document.createTextNode(result.counted ? 'Contamos tu reporte' : 'Ya te habíamos contado'))
+      })
+    })
+    body.append(button)
+  }
   root.append(body)
   return root
 }
@@ -54,12 +88,16 @@ const statusColor = [
   '#666666',
 ] as unknown as maplibregl.ExpressionSpecification // built from a Record: TS cannot see the tuple shape
 
-export function IssueMap({ issues }: { issues: IssueSummary[] }) {
+export function IssueMap({ issues, onEndorse }: { issues: IssueSummary[]; onEndorse: EndorseHandler }) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const issuesById = useRef(new Map<string, IssueSummary>())
   // Latest issues, read by the 'load' handler: data may arrive before or after the map loads.
   const latestIssues = useRef(issues)
+  const onEndorseRef = useRef(onEndorse)
+  useEffect(() => {
+    onEndorseRef.current = onEndorse
+  }, [onEndorse])
 
   useEffect(() => {
     if (!container.current) return
@@ -86,7 +124,7 @@ export function IssueMap({ issues }: { issues: IssueSummary[] }) {
         if (!issue) return
         new maplibregl.Popup({ maxWidth: '260px', offset: 12 })
           .setLngLat([issue.longitude, issue.latitude])
-          .setDOMContent(popupContent(issue))
+          .setDOMContent(popupContent(issue, (i) => onEndorseRef.current(i)))
           .addTo(instance)
       })
       instance.on('mouseenter', 'issues', () => (instance.getCanvas().style.cursor = 'pointer'))

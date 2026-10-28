@@ -1,8 +1,11 @@
 package com.civicrepairs.adapters.in.web;
 
+import com.civicrepairs.application.port.in.AccountException;
+import com.civicrepairs.application.port.in.AccountException.Code;
 import com.civicrepairs.application.port.in.AnalyzeReportUseCase;
 import com.civicrepairs.application.port.in.AnalyzeReportUseCase.AnalysisResult;
 import com.civicrepairs.application.port.in.ConfirmReportUseCase;
+import com.civicrepairs.application.port.in.AuthenticatedUser;
 import com.civicrepairs.application.port.in.ConfirmReportUseCase.ConfirmationResult;
 import com.civicrepairs.application.port.in.ReportDamageUseCase;
 import com.civicrepairs.application.port.in.ReportDamageUseCase.Photo;
@@ -17,13 +20,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -32,8 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Web form. The browser keeps a random token (X-Reporter-Token) that plays the role of the phone number: it is
- * hashed and only the owner can confirm its report. Analysis runs synchronously (the form waits).
+ * Web form. The signed-in account plays the role of the phone number: its id is hashed and only the owner can
+ * confirm the report. Reporting needs a verified email. Analysis runs synchronously (the form waits).
  */
 @RestController
 @RequestMapping("/api/reports")
@@ -57,15 +58,16 @@ class ReportController {
 	}
 
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	ResponseEntity<?> create(@RequestHeader("X-Reporter-Token") String token,
+	ResponseEntity<?> create(AuthenticatedUser user,
 			@RequestPart("photo") MultipartFile photo,
 			@RequestParam double latitude,
 			@RequestParam double longitude,
 			@RequestParam(required = false) String text) throws IOException {
+		requireVerified(user);
 		if (photo.isEmpty() || !PHOTO_TYPES.contains(photo.getContentType())) {
 			return error(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "PHOTO_REQUIRED", "Envía una foto JPG, PNG o WebP.");
 		}
-		var submission = new Submission(ReportChannel.WEB, reporterId(token),
+		var submission = new Submission(ReportChannel.WEB, reporterIds.forUser(user.id()),
 				new Photo(photo.getBytes(), photo.getContentType()), text, new GeoPoint(latitude, longitude),
 				clock.instant());
 		var submitted = reportDamage.submit(submission);
@@ -80,16 +82,15 @@ class ReportController {
 	}
 
 	@PostMapping("/{id}/confirmation")
-	ConfirmationResponse confirm(@RequestHeader("X-Reporter-Token") String token, @PathVariable UUID id,
-			@RequestBody ConfirmationRequest request) {
-		return ConfirmationResponse.from(confirmReport.confirm(id, reporterId(token), request.accepted()));
+	ConfirmationResponse confirm(AuthenticatedUser user, @PathVariable UUID id, @RequestBody ConfirmationRequest request) {
+		requireVerified(user);
+		return ConfirmationResponse.from(confirmReport.confirm(id, reporterIds.forUser(user.id()), request.accepted()));
 	}
 
-	private String reporterId(String token) {
-		if (token == null || token.length() < 16 || token.length() > 128) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid X-Reporter-Token");
+	private static void requireVerified(AuthenticatedUser user) {
+		if (!user.emailVerified()) {
+			throw new AccountException(Code.EMAIL_NOT_VERIFIED, "Confirma tu correo para poder reportar.");
 		}
-		return reporterIds.hash(ReportChannel.WEB, token);
 	}
 
 	private static ResponseEntity<ApiError> error(HttpStatus status, String code, String message) {

@@ -24,7 +24,9 @@ class IssueControllerTest {
 
 	private MockMvc mvc(PublicIssue... issues) {
 		ListPublicIssuesUseCase useCase = () -> List.of(issues);
-		return MockMvcBuilders.standaloneSetup(new IssueController(useCase)).build();
+		return MockMvcBuilders.standaloneSetup(new IssueController(useCase, (issueId, userId) -> {
+			throw new UnsupportedOperationException();
+		})).build();
 	}
 
 	@Test

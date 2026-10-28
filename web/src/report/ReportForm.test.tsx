@@ -98,7 +98,7 @@ describe('ReportForm', () => {
 
   it('shows API errors in Spanish and lets the citizen retry', async () => {
     const { ReportApiError } = await import('../api/reports')
-    api.submitReport.mockRejectedValue(new ReportApiError('OUTSIDE_BOGOTA', 'Por ahora solo recibimos reportes en Bogotá.'))
+    api.submitReport.mockRejectedValue(new ReportApiError(422, 'OUTSIDE_BOGOTA', 'Por ahora solo recibimos reportes en Bogotá.'))
     render(<ReportForm onShowMap={() => {}} />)
 
     fillForm()

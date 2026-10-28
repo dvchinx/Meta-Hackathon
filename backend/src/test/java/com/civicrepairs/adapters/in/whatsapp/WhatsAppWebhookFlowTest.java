@@ -83,8 +83,8 @@ class WhatsAppWebhookFlowTest {
 	void setUp() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		messaging.clear();
-		for (String table : new String[] {"report", "status_transition", "issue", "model_call", "media",
-				"processed_message"}) {
+		for (String table : new String[] {"issue_endorsement", "report", "status_transition", "issue", "model_call",
+				"media", "processed_message"}) {
 			jdbc.sql("DELETE FROM " + table).update();
 		}
 	}

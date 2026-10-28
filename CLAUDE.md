@@ -151,6 +151,18 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 - Los mensajes al usuario van en español colombiano, cortos y claros.
 - URL del webhook en producción: `https://civic.jesusflorez.cloud/webhooks/whatsapp`. En local se usa un túnel (cloudflared o ngrok).
 
+## Cuentas de ciudadanos
+
+- **La web exige cuenta para reportar**; el mapa es público. Decisión del 2026-10-27: la app es para civiles que reportan problemas cotidianos, así que el registro pide **solo lo mínimo** (nombre para mostrar, correo, contraseña). Nada de cédula ni dirección: la petición sale a nombre de la plataforma.
+- **Métodos de entrada**, en este orden: correo y contraseña (hecho), Google (hecho), celular con código por WhatsApp (cuando Meta apruebe la verificación y una plantilla de autenticación).
+- **Google:** botón oficial de Google Identity Services en modo ventana emergente (sin URI de redirección). El backend verifica el ID token con las llaves públicas de Google (`nimbus-jose-jwt`): firma RS256, `aud` = `GOOGLE_CLIENT_ID`, emisor de Google, vigencia y `email_verified`. La web obtiene el ID de cliente en tiempo de ejecución de `GET /api/auth/config`; sin él, el botón no aparece. Busca la cuenta por `google_subject` y luego por correo; si ese correo nunca se verificó, descarta la contraseña existente y cierra sus sesiones (alguien la creó sin ser dueño del correo).
+- **Hay que verificar el correo antes de reportar** (enlace por correo, vence en 24 h). Restablecer la contraseña también verifica el correo y cierra todas las sesiones.
+- Sesión en cookie `civic_session`: HttpOnly, `SameSite=Lax` (es la protección CSRF), `Secure` en HTTPS, 30 días. En la base solo se guarda el SHA-256 del secreto, igual que los enlaces de correo (un solo uso).
+- Contraseñas con BCrypt (coste 11, `spring-security-crypto` sin la cadena de filtros de Spring Security). Política: solo longitud, 8 a 128.
+- En WhatsApp **el número es la cuenta**: no hay registro. El `reporter_id` de la web es el HMAC del id de la cuenta; el de WhatsApp, el del número.
+- Con cuenta el ciudadano puede: ver **Mis reportes**, sumarse a un daño con **"Yo también lo vi"** (cuenta una vez por persona y nunca a quien ya lo reportó) y, cuando exista el flujo, subir la **foto de verificación**.
+- Correos transaccionales con Resend (`RESEND_API_KEY`, remitente `civic@jesusflorez.cloud`). Sin clave, el correo y su enlace solo se registran en el log.
+
 ## Privacidad y abuso
 
 - Nunca exponer números de teléfono: se guardan con hash y sal. La API pública nunca devuelve datos del reportante.
@@ -214,7 +226,7 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 ## Qué NO hacer
 
 - No marcar un Issue como resuelto porque la entidad lo dice.
-- No agregar Kafka, microservicios extra ni un sistema de autenticación complejo (basta un token para el panel admin).
+- No agregar Kafka ni microservicios extra. Las cuentas son las descritas en "Cuentas de ciudadanos": no agregar roles, OAuth propio ni Spring Security completo. El panel admin usa `ADMIN_TOKEN`.
 - No ampliar el alcance fuera de Bogotá ni de los 4 tipos de daño.
 - No usar Muse Image: no aporta al producto.
 - No alojar modelos ni agregar dependencias de GPU.
