@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BOGOTA, STYLE_URL, maplibregl } from '../map/maplibre'
+import { BOGOTA, COLOMBIA_BOUNDS, STYLE_URL, maplibregl } from '../map/maplibre'
 import { Icon } from '../ui/Icon'
 
 export interface PickedLocation {
@@ -35,6 +35,7 @@ export function LocationPicker({
       style: STYLE_URL,
       center: BOGOTA,
       zoom: 11,
+      maxBounds: COLOMBIA_BOUNDS,
       attributionControl: { compact: true },
     })
     instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')

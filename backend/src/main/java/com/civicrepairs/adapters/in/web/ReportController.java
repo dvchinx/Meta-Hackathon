@@ -101,10 +101,12 @@ class ReportController {
 	}
 
 	/**
-	 * @param outcome AWAITING_CONFIRMATION, PHOTO_REJECTED, MANUAL_REVIEW, or MODELS_UNAVAILABLE
+	 * @param outcome           AWAITING_CONFIRMATION, PHOTO_REJECTED, MANUAL_REVIEW, or MODELS_UNAVAILABLE
+	 * @param callEmergencyLine immediate danger: show the 123 emergency line before anything else
 	 */
 	record AnalysisResponse(UUID reportId, String outcome, String damageType, String urgency, String summary,
-			List<String> locationHints, String agency, String markedPhotoUrl) {
+			List<String> locationHints, String agency, String locality, String markedPhotoUrl,
+			boolean callEmergencyLine) {
 
 		static AnalysisResponse from(AnalysisResult r) {
 			var i = r.interpretation();
@@ -115,7 +117,9 @@ class ReportController {
 					r.outcome() == AnalysisOutcome.PHOTO_REJECTED || i == null ? null : i.summary(),
 					i == null ? List.of() : i.locationHints(),
 					r.agencyName(),
-					r.markedMediaId() == null ? null : PublicMediaUrls.of(r.markedMediaId()));
+					r.localityName(),
+					r.markedMediaId() == null ? null : PublicMediaUrls.of(r.markedMediaId()),
+					i != null && r.outcome() == AnalysisOutcome.AWAITING_CONFIRMATION && i.requiresEmergencyCall());
 		}
 	}
 

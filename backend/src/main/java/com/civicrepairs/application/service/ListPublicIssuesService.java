@@ -6,6 +6,8 @@ import com.civicrepairs.application.port.out.PublicIssueReadPort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 class ListPublicIssuesService implements ListPublicIssuesUseCase {
@@ -19,5 +21,10 @@ class ListPublicIssuesService implements ListPublicIssuesUseCase {
 	@Override
 	public List<PublicIssue> listPublicIssues() {
 		return issues.findAllPublic();
+	}
+
+	@Override
+	public Optional<PublicIssue> findPublicIssue(UUID id) {
+		return issues.findPublic(id);
 	}
 }

@@ -12,6 +12,8 @@ import java.util.UUID;
  *
  * @param issueId      null until the report is confirmed
  * @param issueStatus  null until the report is confirmed
+ * @param petition     latest petition of the Issue, null until one is filed
+ * @param myPetitionId latest petition this citizen filed for the Issue (they can open its document); otherwise null
  */
 public record MyReport(
 		UUID reportId,
@@ -24,5 +26,9 @@ public record MyReport(
 		UUID issueId,
 		IssueStatus issueStatus,
 		int issueReportCount,
-		UUID coverMediaId) {
+		UUID coverMediaId,
+		String agencyName,
+		String localityName,
+		FiledPetition petition,
+		UUID myPetitionId) {
 }

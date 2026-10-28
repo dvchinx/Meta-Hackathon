@@ -38,7 +38,7 @@ export function RegisterPage({ next }: { next: string | null }) {
   return (
     <AuthPage
       title="Crear cuenta"
-      intro="Entra con Google o con tu correo. No necesitas cédula ni dirección."
+      intro="Entra con Google o con tu correo. Para reportar no necesitas cédula ni dirección."
       footer={
         <>
           ¿Ya tienes cuenta? <a href={href('/entrar', next ? { next: destination } : undefined)}>Entrar</a>
@@ -83,7 +83,10 @@ export function RegisterPage({ next }: { next: string | null }) {
         </button>
         <p className="privacy">
           <Icon name="shield" size={16} />
-          Tu correo solo se usa para entrar y avisarte de tus reportes. Nunca se publica.
+          <span>
+            Tu correo solo se usa para entrar y avisarte de tus reportes. Nunca se publica. Al crear la cuenta aceptas
+            la <a href={href('/privacidad')}>Política de tratamiento de datos</a>.
+          </span>
         </p>
       </form>
     </AuthPage>

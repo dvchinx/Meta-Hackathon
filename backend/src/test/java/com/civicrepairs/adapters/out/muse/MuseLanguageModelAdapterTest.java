@@ -111,7 +111,7 @@ class MuseLanguageModelAdapterTest {
 		replies.add(completion("{\"nope\":true}", 1000, 50));
 		replies.add(completion(MuseOutputParserTest.VALID, 1000, 200));
 
-		assertThat(adapter.interpret(photo("abc"), null).damageType().name()).isEqualTo("POTHOLE");
+		assertThat(adapter.interpret(photo("abc"), null).damageType().name()).isEqualTo("OPEN_MANHOLE");
 		assertThat(requests).hasSize(2);
 		assertThat(ledger.calls()).extracting("success").containsExactly(false, true);
 	}

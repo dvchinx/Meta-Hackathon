@@ -1,6 +1,7 @@
 package com.civicrepairs.application.service;
 
 import com.civicrepairs.application.port.in.ReportDamageUseCase;
+import com.civicrepairs.application.port.out.GeoQueryPort;
 import com.civicrepairs.application.port.out.MediaStoragePort;
 import com.civicrepairs.application.port.out.ReportRepositoryPort;
 import com.civicrepairs.domain.media.MediaKind;
@@ -20,11 +21,14 @@ class ReportDamageService implements ReportDamageUseCase {
 
 	private final ReportRepositoryPort reports;
 	private final MediaStoragePort media;
+	private final GeoQueryPort geo;
 	private final ReportSettings settings;
 
-	ReportDamageService(ReportRepositoryPort reports, MediaStoragePort media, ReportSettings settings) {
+	ReportDamageService(ReportRepositoryPort reports, MediaStoragePort media, GeoQueryPort geo,
+			ReportSettings settings) {
 		this.reports = reports;
 		this.media = media;
+		this.geo = geo;
 		this.settings = settings;
 	}
 
@@ -56,7 +60,9 @@ class ReportDamageService implements ReportDamageUseCase {
 			report.attachPhoto(stored.id());
 		}
 		report.addContext(s.text());
-		boolean outside = s.location() != null && !report.setLocation(s.location());
+		// The domain's box is a cheap first filter; the locality boundaries leave out Soacha, Chía, Funza...
+		boolean outside = s.location() != null
+				&& (geo.findLocality(s.location()).isEmpty() || !report.setLocation(s.location()));
 
 		reports.save(report);
 		return result(report, outside);

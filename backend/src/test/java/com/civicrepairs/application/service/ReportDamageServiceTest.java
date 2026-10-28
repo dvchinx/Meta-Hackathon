@@ -6,6 +6,7 @@ import com.civicrepairs.domain.report.MissingItem;
 import com.civicrepairs.domain.report.ReportChannel;
 import com.civicrepairs.domain.report.ReportStatus;
 import com.civicrepairs.domain.shared.GeoPoint;
+import com.civicrepairs.support.FakeGeo;
 import com.civicrepairs.support.InMemoryMediaStorage;
 import com.civicrepairs.support.InMemoryReportRepository;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,7 @@ class ReportDamageServiceTest {
 
 	private final InMemoryReportRepository reports = new InMemoryReportRepository();
 	private final ReportDamageService service =
-			new ReportDamageService(reports, new InMemoryMediaStorage(), new ReportSettings(2, 30, 0.7));
+			new ReportDamageService(reports, new InMemoryMediaStorage(), new FakeGeo(), new ReportSettings(2, 30, 0.7));
 
 	private static Submission whatsapp(Photo photo, String text, GeoPoint location, Instant at) {
 		return new Submission(ReportChannel.WHATSAPP, "hash-1", photo, text, location, at);

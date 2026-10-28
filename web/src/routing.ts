@@ -20,7 +20,10 @@ export function href(path: string, query?: Record<string, string>): string {
   return search ? `#${path}?${search}` : `#${path}`
 }
 
-/** Only in-app destinations are honored as "next", so a link cannot send people elsewhere after sign-in. */
+/**
+ * Only in-app destinations are honored as "next", so a link cannot send people elsewhere after sign-in. A simple
+ * query is kept (e.g. /radicar?issue=…).
+ */
 export function safeNext(value: string | null, fallback = '/'): string {
-  return value && /^\/[A-Za-z0-9_\-/]*$/.test(value) ? value : fallback
+  return value && /^\/[A-Za-z0-9_\-/]*(\?[A-Za-z0-9_\-=&]*)?$/.test(value) ? value : fallback
 }

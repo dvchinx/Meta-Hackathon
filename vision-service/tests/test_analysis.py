@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from app import imaging
-from app.analysis import DamageType, analyze
+from app.analysis import DAMAGE_CONCEPTS, DamageType, analyze
 from app.sam.client import SamError, SamResult
 from app.sam.masks import Box, Detection
 
@@ -111,3 +111,7 @@ def test_large_or_non_jpeg_photos_are_re_encoded():
     run(analyze(png, DamageType.POTHOLE, sam, max_side=1024, jpeg_quality=85))
 
     assert all(sent.startswith(b"\xff\xd8\xff") and sent not in (big, png) for sent in sam.sent)
+
+
+def test_every_damage_type_has_a_concept_entry():
+    assert set(DAMAGE_CONCEPTS) == set(DamageType)

@@ -13,10 +13,12 @@ import com.civicrepairs.application.port.out.ReportRepositoryPort;
 import com.civicrepairs.domain.agency.Agency;
 import com.civicrepairs.domain.issue.Issue;
 import com.civicrepairs.domain.report.DamageAnalysis;
+import com.civicrepairs.domain.report.Interpretation;
 import com.civicrepairs.domain.report.Report;
 import com.civicrepairs.domain.report.ReportStatus;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.GeoPoint;
+import com.civicrepairs.domain.shared.Locality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -77,10 +79,15 @@ class ConfirmReportService implements ConfirmReportUseCase {
 			throw new IllegalStateException("Report " + reportId + " is " + report.status());
 		}
 
-		DamageType type = report.interpretation().orElseThrow().damageType();
+		Interpretation interpretation = report.interpretation().orElseThrow();
+		DamageType type = interpretation.damageType();
 		GeoPoint location = report.location().orElseThrow();
 		DamageAnalysis analysis = report.analysis().orElseThrow();
 		Optional<UUID> duplicateOf = findDuplicate(type, location, analysis.publicMediaId());
+		String localityCode = geo.findLocality(location).map(Locality::code).orElse(null);
+		String agency = agencies.findResponsibleFor(type, interpretation.assetOwner(), localityCode)
+				.map(Agency::code)
+				.orElse(null);
 
 		return tx.execute(status -> {
 			Issue issue = duplicateOf.flatMap(issues::findByIdForUpdate)
@@ -88,7 +95,6 @@ class ConfirmReportService implements ConfirmReportUseCase {
 					.orElse(null);
 			boolean newIssue = issue == null;
 			if (newIssue) {
-				String agency = agencies.findResponsibleFor(type).map(Agency::code).orElse(null);
 				issue = Issue.open(UUID.randomUUID(), type, location, agency, analysis.publicMediaId(),
 						reportId.toString(), clock.instant());
 			} else {

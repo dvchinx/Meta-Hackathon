@@ -22,6 +22,6 @@ class ListMyReportsService implements ListMyReportsUseCase {
 
 	@Override
 	public List<MyReport> listMyReports(UUID userId) {
-		return reports.findByReporter(reporterIds.forUser(userId));
+		return reports.findByReporter(reporterIds.forUser(userId), userId);
 	}
 }

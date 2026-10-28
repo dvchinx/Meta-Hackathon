@@ -10,7 +10,16 @@ import { useAuth } from './useAuth'
  * Wraps screens that need a verified account. Anonymous visitors get a short explanation and the two ways in;
  * unverified accounts get a reminder with a resend button.
  */
-export function RequireAccount({ next, children }: { next: string; children: ReactNode }) {
+export function RequireAccount({
+  next,
+  purpose = 'reportar',
+  children,
+}: {
+  next: string
+  /** Verb shown in the explanation: "Necesitas una cuenta para …". */
+  purpose?: 'reportar' | 'radicar'
+  children: ReactNode
+}) {
   const { state } = useAuth()
   const [resent, setResent] = useState<string | null>(null)
 
@@ -29,7 +38,7 @@ export function RequireAccount({ next, children }: { next: string; children: Rea
           <span className="status-icon info">
             <Icon name="user" size={28} />
           </span>
-          <h1>Necesitas una cuenta para reportar</h1>
+          <h1>Necesitas una cuenta para {purpose}</h1>
           <p>Es rápido: un nombre, un correo y una contraseña. Así puedes seguir tus reportes y confirmar reparaciones.</p>
           <div className="status-actions">
             <a className="button button-primary" href={href('/registro', { next })}>
@@ -53,7 +62,7 @@ export function RequireAccount({ next, children }: { next: string; children: Rea
           </span>
           <h1>Confirma tu correo</h1>
           <p>
-            Te enviamos un enlace a <strong>{state.user.email}</strong>. Ábrelo para poder reportar.
+            Te enviamos un enlace a <strong>{state.user.email}</strong>. Ábrelo para poder {purpose}.
           </p>
           {resent && <Notice tone="info">{resent}</Notice>}
           <div className="status-actions">

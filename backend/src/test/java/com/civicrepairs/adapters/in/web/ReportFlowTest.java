@@ -77,7 +77,7 @@ class ReportFlowTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
-		for (String table : new String[] {"issue_endorsement", "report", "status_transition", "issue", "model_call",
+		for (String table : new String[] {"petition", "filer_profile", "issue_endorsement", "report", "status_transition", "issue", "model_call",
 				"media", "email_token", "user_session", "user_account"}) {
 			jdbc.sql("DELETE FROM " + table).update();
 		}
@@ -111,7 +111,9 @@ class ReportFlowTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.outcome").value("AWAITING_CONFIRMATION"))
 				.andExpect(jsonPath("$.damageType").value("POTHOLE"))
-				.andExpect(jsonPath("$.agency").value("Instituto de Desarrollo Urbano")));
+				.andExpect(jsonPath("$.agency").value("Unidad de Mantenimiento Vial"))
+				.andExpect(jsonPath("$.locality").value("Chapinero"))
+				.andExpect(jsonPath("$.callEmergencyLine").value(false)));
 
 		mvc.perform(get(first.path("markedPhotoUrl").asString()))
 				.andExpect(status().isOk())
@@ -173,6 +175,10 @@ class ReportFlowTest {
 	@Test
 	void onlyBogota() throws Exception {
 		report(citizenA, 6.2442, -75.5812)
+				.andExpect(status().isUnprocessableContent())
+				.andExpect(jsonPath("$.code").value("OUTSIDE_BOGOTA"));
+		// Soacha: inside the rough box around Bogotá, but outside its localities.
+		report(citizenA, 4.5794, -74.2168)
 				.andExpect(status().isUnprocessableContent())
 				.andExpect(jsonPath("$.code").value("OUTSIDE_BOGOTA"));
 	}

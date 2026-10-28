@@ -83,7 +83,7 @@ class WhatsAppWebhookFlowTest {
 	void setUp() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		messaging.clear();
-		for (String table : new String[] {"issue_endorsement", "report", "status_transition", "issue", "model_call",
+		for (String table : new String[] {"petition", "filer_profile", "issue_endorsement", "report", "status_transition", "issue", "model_call",
 				"media", "processed_message"}) {
 			jdbc.sql("DELETE FROM " + table).update();
 		}
@@ -165,10 +165,11 @@ class WhatsAppWebhookFlowTest {
 		messaging.clear();
 		location(4.676389, -74.048611);
 		assertThat(messaging.sent()).extracting(Sent::kind).containsExactly("text", "image", "buttons");
-		assertThat(messaging.sent().get(1).text()).contains("Hueco").contains("Instituto de Desarrollo Urbano");
+		assertThat(messaging.sent().get(1).text()).contains("Hueco").contains("Unidad de Mantenimiento Vial");
 
 		button(MessagingPort.CONFIRM_YES);
-		assertThat(replies().getLast()).contains("quedó registrado").contains("https://civic.example");
+		assertThat(replies().getLast()).contains("quedó registrado").contains("https://civic.example")
+				.contains("https://civic.example/#/radicar?issue=");
 
 		mvc.perform(get("/api/issues")).andExpect(jsonPath("$.length()").value(1));
 	}

@@ -50,7 +50,7 @@ class MuseLanguageModelAdapter implements LanguageModelPort {
 	private final ModelMetering metering;
 	private final MetaApiProperties properties;
 	private final MuseOutputParser parser;
-	private final MusePrompt interpretPrompt = MusePrompt.load("interpret-report.v1");
+	private final MusePrompt interpretPrompt = MusePrompt.load("interpret-report.v2");
 	private final MusePrompt sameDamagePrompt = MusePrompt.load("same-damage.v1");
 
 	MuseLanguageModelAdapter(RestClient.Builder builder, JsonMapper json, ModelCallLedgerPort ledger,

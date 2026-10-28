@@ -25,8 +25,10 @@ const analysis: ReportAnalysis = {
   urgency: 'HIGH',
   summary: 'Hueco profundo en el carril derecho.',
   locationHints: ['Calle 60 con Carrera 7'],
-  agency: 'Instituto de Desarrollo Urbano',
+  agency: 'Unidad de Mantenimiento Vial',
+  locality: 'Chapinero',
   markedPhotoUrl: '/media/m1.jpg',
+  callEmergencyLine: false,
 }
 
 beforeEach(() => {
@@ -68,7 +70,9 @@ describe('ReportForm', () => {
     await screen.findByText('Revisa tu reporte')
     expect(screen.getByText('Hueco')).toBeTruthy()
     expect(screen.getByText('Alta')).toBeTruthy()
-    expect(screen.getByText('Instituto de Desarrollo Urbano')).toBeTruthy()
+    expect(screen.getByText('Unidad de Mantenimiento Vial')).toBeTruthy()
+    expect(screen.getByText('Chapinero')).toBeTruthy()
+    expect(screen.queryByText(/Línea 123/)).toBeNull()
     expect(screen.getByText('Calle 60 con Carrera 7')).toBeTruthy()
     expect((screen.getByAltText('Foto con el daño marcado') as HTMLImageElement).src).toContain('/media/m1.jpg')
     expect(api.submitReport.mock.calls[0][0]).toMatchObject({ latitude: 4.6486, longitude: -74.0628 })
@@ -76,9 +80,20 @@ describe('ReportForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Sí, es correcto' }))
 
     await screen.findByText(/ahora son 3 reportes/)
+    expect(screen.getByRole('link', { name: 'Radicar petición' }).getAttribute('href')).toBe('#/radicar?issue=i1')
     fireEvent.click(screen.getByRole('button', { name: 'Ver en el mapa' }))
     expect(onShowMap).toHaveBeenCalled()
     expect(api.confirmReport).toHaveBeenCalledWith('r1', true)
+  })
+
+  it('puts the 123 emergency line first when there is immediate danger', async () => {
+    api.submitReport.mockResolvedValue({ ...analysis, damageType: 'OPEN_MANHOLE', callEmergencyLine: true })
+    render(<ReportForm onShowMap={() => {}} />)
+
+    fillForm()
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar reporte' }))
+
+    expect((await screen.findByRole('alert')).textContent).toContain('llama ya a la Línea 123')
   })
 
   it('asks for another photo when it is rejected and keeps the location', async () => {

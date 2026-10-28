@@ -8,6 +8,7 @@ import com.civicrepairs.domain.issue.StatusTransition;
 import com.civicrepairs.domain.issue.TransitionCause;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.GeoPoint;
+import com.civicrepairs.domain.shared.Locality;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -75,6 +76,20 @@ class IssuePersistenceAdapter implements IssueRepositoryPort, GeoQueryPort {
 				.param("limit", limit)
 				.query(UUID.class)
 				.list();
+	}
+
+	@Override
+	public Optional<Locality> findLocality(GeoPoint point) {
+		return jdbc.sql("""
+						SELECT code, name FROM locality
+						WHERE ST_Covers(boundary, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))
+						ORDER BY code
+						LIMIT 1
+						""")
+				.param("lon", point.longitude())
+				.param("lat", point.latitude())
+				.query((rs, n) -> new Locality(rs.getString("code"), rs.getString("name")))
+				.optional();
 	}
 
 	private static IssueJpaEntity newEntity(Issue issue) {

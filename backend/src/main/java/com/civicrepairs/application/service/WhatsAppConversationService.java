@@ -39,7 +39,7 @@ class WhatsAppConversationService implements HandleIncomingMessageUseCase {
 	private final MediaStoragePort media;
 	private final ReporterIds reporterIds;
 	private final ProcessedMessagePort processedMessages;
-	private final String mapUrl;
+	private final String publicBaseUrl;
 
 	WhatsAppConversationService(ReportRepositoryPort reports, ReportDamageUseCase reportDamage,
 			AnalyzeReportUseCase analyzeReport, ConfirmReportUseCase confirmReport, MessagingPort messaging,
@@ -53,7 +53,7 @@ class WhatsAppConversationService implements HandleIncomingMessageUseCase {
 		this.media = media;
 		this.reporterIds = reporterIds;
 		this.processedMessages = processedMessages;
-		this.mapUrl = publicBaseUrl;
+		this.publicBaseUrl = publicBaseUrl;
 	}
 
 	@Override
@@ -114,6 +114,9 @@ class WhatsAppConversationService implements HandleIncomingMessageUseCase {
 		}
 		switch (analysis.outcome()) {
 			case AWAITING_CONFIRMATION -> {
+				if (analysis.interpretation().requiresEmergencyCall()) {
+					messaging.sendText(to, BotMessages.CALL_123);
+				}
 				byte[] marked = media.load(analysis.markedMediaId()).data();
 				messaging.sendImage(to, marked, BotMessages.summary(analysis.interpretation(), analysis.agencyName()));
 				messaging.sendConfirmationRequest(to, BotMessages.CONFIRM_QUESTION);
@@ -131,7 +134,8 @@ class WhatsAppConversationService implements HandleIncomingMessageUseCase {
 		}
 		var result = confirmReport.confirm(report.id(), reporterId, accepted);
 		messaging.sendText(message.from(), accepted
-				? BotMessages.confirmed(result.newIssue(), result.reportCount(), mapUrl)
+				? BotMessages.confirmed(result.newIssue(), result.reportCount(), publicBaseUrl,
+						publicBaseUrl + "/#/radicar?issue=" + result.issueId())
 				: BotMessages.CANCELLED);
 	}
 

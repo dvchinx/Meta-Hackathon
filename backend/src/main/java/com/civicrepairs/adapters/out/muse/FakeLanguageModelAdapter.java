@@ -3,6 +3,7 @@ package com.civicrepairs.adapters.out.muse;
 import com.civicrepairs.application.port.out.LanguageModelPort;
 import com.civicrepairs.application.port.out.MediaContent;
 import com.civicrepairs.domain.report.Interpretation;
+import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.Urgency;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,7 +19,7 @@ class FakeLanguageModelAdapter implements LanguageModelPort {
 	@Override
 	public Interpretation interpret(MediaContent photo, String context) {
 		return new Interpretation(DamageType.POTHOLE, Urgency.MEDIUM, true, List.of(),
-				"Hueco en la vía (respuesta simulada, Muse Spark desactivado).", 0.9);
+				"Hueco en la vía (respuesta simulada, Muse Spark desactivado).", 0.9, AssetOwner.UNKNOWN);
 	}
 
 	@Override

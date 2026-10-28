@@ -16,5 +16,8 @@ public interface ReportRepositoryPort {
 
 	int countCreatedSince(String reporterId, Instant since);
 
+	/** The report that opened the Issue: its confirmed description is the subject of the petition. */
+	Optional<Report> findFirstConfirmedByIssue(UUID issueId);
+
 	void save(Report report);
 }

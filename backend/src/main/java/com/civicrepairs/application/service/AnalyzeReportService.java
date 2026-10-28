@@ -3,6 +3,7 @@ package com.civicrepairs.application.service;
 import com.civicrepairs.application.port.in.AnalyzeReportUseCase;
 import com.civicrepairs.application.port.in.ReportNotFoundException;
 import com.civicrepairs.application.port.out.AgencyRepositoryPort;
+import com.civicrepairs.application.port.out.GeoQueryPort;
 import com.civicrepairs.application.port.out.LanguageModelPort;
 import com.civicrepairs.application.port.out.MediaStoragePort;
 import com.civicrepairs.application.port.out.ModelUnavailableException;
@@ -15,6 +16,7 @@ import com.civicrepairs.domain.report.AnalysisOutcome;
 import com.civicrepairs.domain.report.DamageAnalysis;
 import com.civicrepairs.domain.report.Interpretation;
 import com.civicrepairs.domain.report.Report;
+import com.civicrepairs.domain.shared.Locality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,15 +35,17 @@ class AnalyzeReportService implements AnalyzeReportUseCase {
 	private final LanguageModelPort languageModel;
 	private final VisionPort vision;
 	private final AgencyRepositoryPort agencies;
+	private final GeoQueryPort geo;
 	private final TransactionTemplate tx;
 
 	AnalyzeReportService(ReportRepositoryPort reports, MediaStoragePort media, LanguageModelPort languageModel,
-			VisionPort vision, AgencyRepositoryPort agencies, TransactionTemplate tx) {
+			VisionPort vision, AgencyRepositoryPort agencies, GeoQueryPort geo, TransactionTemplate tx) {
 		this.reports = reports;
 		this.media = media;
 		this.languageModel = languageModel;
 		this.vision = vision;
 		this.agencies = agencies;
+		this.geo = geo;
 		this.tx = tx;
 	}
 
@@ -75,12 +79,15 @@ class AnalyzeReportService implements AnalyzeReportUseCase {
 		tx.executeWithoutResult(status -> reports.save(report));
 
 		Interpretation interpretation = report.interpretation().orElse(null);
+		Locality locality = geo.findLocality(report.location().orElseThrow()).orElse(null);
 		String agencyName = interpretation == null ? null
-				: agencies.findResponsibleFor(interpretation.damageType()).map(Agency::name).orElse(null);
+				: agencies.findResponsibleFor(interpretation.damageType(), interpretation.assetOwner(),
+						locality == null ? null : locality.code()).map(Agency::name).orElse(null);
 		UUID marked = outcome == AnalysisOutcome.AWAITING_CONFIRMATION
 				? report.analysis().map(DamageAnalysis::markedMediaId).orElse(null)
 				: null;
-		return new AnalysisResult(reportId, outcome, interpretation, marked, agencyName);
+		return new AnalysisResult(reportId, outcome, interpretation, marked, agencyName,
+				locality == null ? null : locality.name());
 	}
 
 	private Report load(UUID id) {

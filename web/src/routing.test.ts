@@ -17,6 +17,8 @@ describe('routing', () => {
 
   it('only honors in-app destinations as next', () => {
     expect(safeNext('/reportar')).toBe('/reportar')
+    expect(safeNext('/radicar?issue=0b9e-11aa')).toBe('/radicar?issue=0b9e-11aa')
+    expect(safeNext('/radicar?next=https://evil.example')).toBe('/')
     expect(safeNext('https://evil.example')).toBe('/')
     expect(safeNext('//evil.example')).toBe('/')
     expect(safeNext(null, '/x')).toBe('/x')

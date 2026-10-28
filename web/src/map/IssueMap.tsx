@@ -1,10 +1,11 @@
 import type { FeatureCollection, Point } from 'geojson'
 import type { GeoJSONSource, MapLayerMouseEvent } from 'maplibre-gl'
 import { useEffect, useRef } from 'react'
-import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, reportsLabel, timeOpen } from '../issues/labels'
+import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, canFile, deadlineLabel, reportsLabel, timeOpen } from '../issues/labels'
 import type { IssueSummary } from '../issues/types'
+import { href } from '../routing'
 import { icons } from '../ui/icons'
-import { BOGOTA, STYLE_URL, maplibregl } from './maplibre'
+import { BOGOTA, COLOMBIA_BOUNDS, STYLE_URL, maplibregl } from './maplibre'
 
 /** Resolves with the new count, or null when nothing changed (not signed in, error). */
 export type EndorseHandler = (issue: IssueSummary) => Promise<{ counted: boolean; reportCount: number } | null>
@@ -57,7 +58,15 @@ function popupContent(issue: IssueSummary, onEndorse: EndorseHandler): HTMLEleme
 
   const meta = element('div', 'issue-popup-meta', `${reportsLabel(issue.reportCount)} · ${timeOpen(issue.openedAt)}`)
   body.append(meta)
+  if (issue.locality) body.append(element('div', 'issue-popup-meta', `Localidad: ${issue.locality}`))
   if (issue.agency) body.append(element('div', 'issue-popup-meta', `Responsable: ${issue.agency}`))
+  if (issue.petition) {
+    body.append(element('div', 'issue-popup-meta', `Radicado ${issue.petition.radicado} (simulado)`))
+    if (issue.status === 'FILED') {
+      const tone = issue.petition.overdue ? 'issue-popup-deadline is-overdue' : 'issue-popup-deadline'
+      body.append(element('div', tone, deadlineLabel(issue.petition)))
+    }
+  }
 
   if (issue.status !== 'VERIFIED') {
     const button = element('button', 'button button-secondary issue-popup-action')
@@ -76,6 +85,20 @@ function popupContent(issue: IssueSummary, onEndorse: EndorseHandler): HTMLEleme
       })
     })
     body.append(button)
+  }
+  if (canFile(issue)) {
+    const file = element('a', 'button button-primary issue-popup-action')
+    file.href = href('/radicar', { issue: issue.id })
+    file.append(iconElement('mail'), document.createTextNode('Radicar petición'))
+    body.append(file)
+  }
+  if (issue.officialChannel) {
+    const channel = element('a', 'issue-popup-link', 'Canal oficial de la entidad')
+    channel.href = issue.officialChannel.url
+    channel.target = '_blank'
+    channel.rel = 'noreferrer'
+    body.append(channel)
+    if (issue.officialChannel.phone) body.append(element('div', 'issue-popup-meta', issue.officialChannel.phone))
   }
   root.append(body)
   return root
@@ -101,7 +124,13 @@ export function IssueMap({ issues, onEndorse }: { issues: IssueSummary[]; onEndo
 
   useEffect(() => {
     if (!container.current) return
-    const instance = new maplibregl.Map({ container: container.current, style: STYLE_URL, center: BOGOTA, zoom: 11 })
+    const instance = new maplibregl.Map({
+      container: container.current,
+      style: STYLE_URL,
+      center: BOGOTA,
+      zoom: 11,
+      maxBounds: COLOMBIA_BOUNDS,
+    })
     instance.addControl(new maplibregl.NavigationControl(), 'top-right')
     instance.addControl(new maplibregl.GeolocateControl({}), 'top-right')
 

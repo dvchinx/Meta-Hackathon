@@ -14,8 +14,9 @@ public interface AnalyzeReportUseCase {
 	 * @param outcome        null when the models were unavailable and the report went to manual review
 	 * @param markedMediaId  blurred photo with the damage highlighted (null unless awaiting confirmation)
 	 * @param agencyName     responsible agency, if any rule covers the damage type
+	 * @param localityName   localidad of the report's location
 	 */
 	record AnalysisResult(UUID reportId, AnalysisOutcome outcome, Interpretation interpretation, UUID markedMediaId,
-			String agencyName) {
+			String agencyName, String localityName) {
 	}
 }

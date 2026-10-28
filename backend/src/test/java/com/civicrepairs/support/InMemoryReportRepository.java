@@ -3,6 +3,7 @@ package com.civicrepairs.support;
 import com.civicrepairs.application.port.out.ReportRepositoryPort;
 import com.civicrepairs.domain.report.Report;
 import com.civicrepairs.domain.report.ReportChannel;
+import com.civicrepairs.domain.report.ReportStatus;
 
 import java.time.Instant;
 import java.util.Comparator;
@@ -33,6 +34,13 @@ public class InMemoryReportRepository implements ReportRepositoryPort {
 		return (int) reports.values().stream()
 				.filter(r -> r.reporterId().equals(reporterId) && !r.createdAt().isBefore(since))
 				.count();
+	}
+
+	@Override
+	public Optional<Report> findFirstConfirmedByIssue(UUID issueId) {
+		return reports.values().stream()
+				.filter(r -> r.status() == ReportStatus.CONFIRMED && r.issueId().equals(Optional.of(issueId)))
+				.min(Comparator.comparing(Report::createdAt));
 	}
 
 	@Override

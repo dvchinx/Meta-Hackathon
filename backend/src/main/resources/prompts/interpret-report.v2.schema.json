@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["damageType", "assetOwner", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence"],
+  "properties": {
+    "damageType": {
+      "type": "string",
+      "enum": ["POTHOLE", "OPEN_MANHOLE", "DAMAGED_POLE", "RISKY_TREE", "STREETLIGHT_OUT", "WATER_LEAK",
+               "BLOCKED_DRAIN", "GARBAGE_DUMP", "DAMAGED_SIDEWALK", "DAMAGED_STREET_FURNITURE", "OTHER"]
+    },
+    "assetOwner": { "type": "string", "enum": ["WATER", "POWER", "GAS", "TELECOM", "STREET_LIGHTING", "UNKNOWN"] },
+    "urgency": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+    "isValidUrbanDamage": { "type": "boolean" },
+    "locationHints": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "confidence": { "type": "number" }
+  }
+}

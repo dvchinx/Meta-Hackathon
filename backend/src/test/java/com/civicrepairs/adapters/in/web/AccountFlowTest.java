@@ -86,7 +86,7 @@ class AccountFlowTest {
 	void setUp() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		email.clear();
-		for (String table : new String[] {"issue_endorsement", "report", "status_transition", "issue", "model_call",
+		for (String table : new String[] {"petition", "filer_profile", "issue_endorsement", "report", "status_transition", "issue", "model_call",
 				"media", "email_token", "user_session", "user_account"}) {
 			jdbc.sql("DELETE FROM " + table).update();
 		}

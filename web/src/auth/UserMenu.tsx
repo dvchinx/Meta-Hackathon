@@ -51,6 +51,10 @@ export function UserMenu({ currentPath }: { currentPath: string }) {
             <Icon name="list" size={16} />
             Mis reportes
           </a>
+          <a role="menuitem" className="menu-item" href={href('/mis-datos')} onClick={() => setOpen(false)}>
+            <Icon name="lock" size={16} />
+            Mis datos para radicar
+          </a>
           <button
             type="button"
             role="menuitem"

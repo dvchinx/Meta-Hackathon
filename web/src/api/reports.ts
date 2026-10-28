@@ -1,4 +1,4 @@
-import type { DamageType, IssueStatus } from '../issues/types'
+import type { DamageType, IssueStatus, PetitionStatus } from '../issues/types'
 import { parseJson, postJson } from './http'
 
 export { ApiError as ReportApiError } from './http'
@@ -15,7 +15,10 @@ export interface ReportAnalysis {
   summary: string | null
   locationHints: string[]
   agency: string | null
+  locality: string | null
   markedPhotoUrl: string | null
+  /** Immediate danger: show the 123 emergency line before anything else. */
+  callEmergencyLine: boolean
 }
 
 export interface ReportConfirmation {
@@ -38,6 +41,11 @@ export interface MyReport {
   issueStatus: IssueStatus | null
   issueReportCount: number
   photoUrl: string | null
+  agency: string | null
+  locality: string | null
+  petition: PetitionStatus | null
+  /** Latest petition this citizen filed for the damage: they can open the document. */
+  myPetitionId: string | null
 }
 
 export interface Endorsement {

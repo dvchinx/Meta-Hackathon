@@ -1,5 +1,6 @@
 package com.civicrepairs.domain.report;
 
+import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.GeoPoint;
 import com.civicrepairs.domain.shared.Urgency;
@@ -23,7 +24,8 @@ class ReportTest {
 	}
 
 	private static Interpretation interpretation(DamageType type, boolean valid, double confidence) {
-		return new Interpretation(type, Urgency.HIGH, valid, List.of("frente al parque"), "Hueco profundo", confidence);
+		return new Interpretation(type, Urgency.HIGH, valid, List.of("frente al parque"), "Hueco profundo", confidence,
+				AssetOwner.UNKNOWN);
 	}
 
 	private static DamageAnalysis analysis() {

@@ -9,4 +9,13 @@ maplibregl.setWorkerUrl(workerUrl)
 export const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
 export const BOGOTA: [number, number] = [-74.0817, 4.6097]
 
+/**
+ * The maps never leave Colombia (mainland plus San Andrés and Providencia, with some margin). Reports are still
+ * accepted only inside Bogotá: the backend checks the locality boundaries.
+ */
+export const COLOMBIA_BOUNDS: [[number, number], [number, number]] = [
+  [-82.5, -4.8],
+  [-66.0, 13.8],
+]
+
 export { maplibregl }

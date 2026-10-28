@@ -8,6 +8,7 @@ import {
   type Urgency,
 } from '../api/reports'
 import { DAMAGE_LABELS } from '../issues/labels'
+import { href } from '../routing'
 import { Icon } from '../ui/Icon'
 import { Notice } from '../ui/Notice'
 import { LocationPicker, type PickedLocation } from './LocationPicker'
@@ -160,6 +161,12 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
         <article className="card review-card">
           {a.markedPhotoUrl && <img className="review-photo" src={a.markedPhotoUrl} alt="Foto con el daño marcado" />}
           <div className="review-body">
+            {a.callEmergencyLine && (
+              <Notice tone="error">
+                <strong>Si hay peligro inmediato, llama ya a la Línea 123.</strong> Este reporte no reemplaza esa
+                llamada.
+              </Notice>
+            )}
             <p className="review-summary">{a.summary}</p>
             <dl className="facts">
               <div>
@@ -178,6 +185,12 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
                 <div className="wide">
                   <dt>Entidad responsable</dt>
                   <dd>{a.agency}</dd>
+                </div>
+              )}
+              {a.locality && (
+                <div>
+                  <dt>Localidad</dt>
+                  <dd>{a.locality}</dd>
                 </div>
               )}
               {a.locationHints.length > 0 && (
@@ -221,8 +234,18 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
               : `Otras personas ya habían reportado este daño: ahora son ${c.reportCount} reportes.`}
           </p>
           <p>Lo daremos por reparado solo cuando una foto nueva lo confirme.</p>
+          <p>
+            ¿Quieres exigir la reparación? Radica un derecho de petición ante la entidad: tiene 15 días hábiles para
+            responder.
+          </p>
           <div className="status-actions">
-            <button type="button" className="button button-primary" onClick={onShowMap}>
+            {c.issueId && (
+              <a className="button button-primary" href={href('/radicar', { issue: c.issueId })}>
+                <Icon name="mail" size={18} />
+                Radicar petición
+              </a>
+            )}
+            <button type="button" className="button button-secondary" onClick={onShowMap}>
               <Icon name="map" size={18} />
               Ver en el mapa
             </button>
@@ -262,7 +285,10 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
           Volver al mapa
         </a>
         <h1>Reportar un daño</h1>
-        <p>Huecos, alcantarillas destapadas, postes dañados o árboles en riesgo en Bogotá.</p>
+        <p>
+          Huecos, alcantarillas, postes, árboles en riesgo, alumbrado, fugas de agua, sumideros, basuras, andenes y
+          mobiliario urbano en Bogotá.
+        </p>
       </header>
 
       <form className="card form-card" onSubmit={submit} noValidate>
@@ -340,7 +366,7 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
           </button>
           <p className="privacy">
             <Icon name="shield" size={16} />
-            No pedimos tu nombre. Difuminamos caras y placas antes de publicar cualquier foto.
+            Tu nombre no se publica. Difuminamos caras y placas antes de publicar cualquier foto.
           </p>
         </div>
       </form>

@@ -54,6 +54,10 @@ final class BotMessages {
 
 	static final String CANCELLED = "Listo, descarté ese reporte. Si quieres reportar otro daño, envíame una foto.";
 
+	static final String CALL_123 =
+			"🚨 Si hay peligro inmediato para personas o vehículos, llama ya a la *Línea 123*. Este reporte no reemplaza "
+					+ "esa llamada.";
+
 	static String summary(Interpretation i, String agency) {
 		String responsible = agency == null ? "" : "\nResponsable: " + agency;
 		return "*" + label(i.damageType()) + "* · urgencia " + urgency(i.urgency()) + "\n" + i.summary() + responsible;
@@ -61,13 +65,14 @@ final class BotMessages {
 
 	static final String CONFIRM_QUESTION = "¿Es correcto? Si confirmas, lo publicamos en el mapa y hacemos seguimiento.";
 
-	static String confirmed(boolean newIssue, int reportCount, String mapUrl) {
+	static String confirmed(boolean newIssue, int reportCount, String mapUrl, String fileUrl) {
 		String what = newIssue
 				? "Tu reporte quedó registrado ✅ Es el primero de este daño."
 				: "Tu reporte quedó registrado ✅ Otras personas ya habían reportado este daño: ahora son "
 						+ reportCount + " reportes.";
 		return what + "\n\nTe avisaremos cuando la entidad responda y cuando verifiquemos la reparación con una foto."
-				+ "\nMapa: " + mapUrl;
+				+ "\nMapa: " + mapUrl
+				+ "\n\n¿Quieres radicar la petición ante la entidad con tus datos? Hazlo desde la web: " + fileUrl;
 	}
 
 	static String label(DamageType type) {
@@ -76,6 +81,12 @@ final class BotMessages {
 			case OPEN_MANHOLE -> "Alcantarilla destapada";
 			case DAMAGED_POLE -> "Poste dañado";
 			case RISKY_TREE -> "Árbol en riesgo";
+			case STREETLIGHT_OUT -> "Luminaria apagada";
+			case WATER_LEAK -> "Fuga de agua";
+			case BLOCKED_DRAIN -> "Sumidero tapado";
+			case GARBAGE_DUMP -> "Basuras o escombros";
+			case DAMAGED_SIDEWALK -> "Andén dañado";
+			case DAMAGED_STREET_FURNITURE -> "Mobiliario urbano dañado";
 			case OTHER -> "Otro daño";
 		};
 	}

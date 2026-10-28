@@ -9,6 +9,7 @@ import com.civicrepairs.domain.issue.AgencyResponseClassification;
 import com.civicrepairs.domain.issue.Issue;
 import com.civicrepairs.domain.issue.IssueStatus;
 import com.civicrepairs.domain.issue.VerificationResult;
+import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.GeoPoint;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +52,7 @@ class IssuePersistenceTest {
 
 	@BeforeEach
 	void clean() {
+		jdbc.sql("DELETE FROM petition").update();
 		jdbc.sql("DELETE FROM status_transition").update();
 		jdbc.sql("DELETE FROM issue").update();
 	}
@@ -143,21 +145,72 @@ class IssuePersistenceTest {
 	}
 
 	@Test
-	void resolvesTheResponsibleAgencyByDamageType() {
-		assertThat(agencies.findResponsibleFor(DamageType.POTHOLE)).get().extracting("code").isEqualTo("IDU");
-		assertThat(agencies.findResponsibleFor(DamageType.OPEN_MANHOLE)).get().extracting("code").isEqualTo("EAAB");
-		assertThat(agencies.findResponsibleFor(DamageType.OTHER)).isEmpty();
+	void resolvesTheResponsibleAgencyByDamageTypeAndAssetOwner() {
+		assertThat(agency(DamageType.POTHOLE, AssetOwner.UNKNOWN, "02")).isEqualTo("UMV");
+		// Lids: the Acueducto by default, unless the markings say otherwise.
+		assertThat(agency(DamageType.OPEN_MANHOLE, AssetOwner.UNKNOWN, "02")).isEqualTo("EAAB");
+		assertThat(agency(DamageType.OPEN_MANHOLE, AssetOwner.WATER, "02")).isEqualTo("EAAB");
+		assertThat(agency(DamageType.OPEN_MANHOLE, AssetOwner.POWER, "02")).isEqualTo("ENEL");
+		assertThat(agency(DamageType.OPEN_MANHOLE, AssetOwner.GAS, "02")).isEqualTo("VANTI");
+		assertThat(agency(DamageType.DAMAGED_POLE, AssetOwner.STREET_LIGHTING, "02")).isEqualTo("UAESP");
+		assertThat(agency(DamageType.DAMAGED_POLE, AssetOwner.UNKNOWN, "02")).isEqualTo("ENEL");
+		assertThat(agency(DamageType.GARBAGE_DUMP, AssetOwner.UNKNOWN, "02")).isEqualTo("UAESP");
+		// Sidewalks go to the Alcaldía Local of the damage's locality.
+		assertThat(agency(DamageType.DAMAGED_SIDEWALK, AssetOwner.UNKNOWN, "08")).isEqualTo("AL08");
+		assertThat(agencies.findResponsibleFor(DamageType.DAMAGED_SIDEWALK, AssetOwner.UNKNOWN, "08")).get()
+				.extracting("name").isEqualTo("Alcaldía Local de Kennedy");
+		assertThat(agencies.findResponsibleFor(DamageType.DAMAGED_SIDEWALK, AssetOwner.UNKNOWN, null)).isEmpty();
+		assertThat(agencies.findResponsibleFor(DamageType.OTHER, AssetOwner.UNKNOWN, "02")).isEmpty();
 	}
 
 	@Test
-	void publicProjectionIncludesTheAgencyName() {
+	void everySupportedDamageTypeHasARuleAndAnOfficialChannel() {
+		for (DamageType type : DamageType.values()) {
+			if (type.requiresManualReview()) {
+				continue;
+			}
+			assertThat(agencies.findResponsibleFor(type, AssetOwner.UNKNOWN, "11")).as(type.name()).isPresent();
+			assertThat(jdbc.sql("SELECT count(*) FROM official_channel WHERE damage_type = :t AND agency_code IS NULL")
+					.param("t", type.name()).query(Integer.class).single()).as(type.name()).isEqualTo(1);
+		}
+	}
+
+	@Test
+	void findsTheLocalityOfAPoint() {
+		assertThat(geo.findLocality(PARQUE_93)).get().extracting("name").isEqualTo("Chapinero");
+		assertThat(geo.findLocality(new GeoPoint(4.6280, -74.1580))).get().extracting("name").isEqualTo("Kennedy");
+		// Neighbouring municipalities: Soacha (inside the rough box around Bogotá) and Chía.
+		assertThat(geo.findLocality(new GeoPoint(4.5794, -74.2168))).isEmpty();
+		assertThat(geo.findLocality(new GeoPoint(4.8615, -74.0582))).isEmpty();
+	}
+
+	@Test
+	void publicProjectionIncludesAgencyLocalityAndOfficialChannel() {
 		var issue = pothole(PARQUE_93);
 		issues.save(issue);
 
 		assertThat(publicIssues.findAllPublic()).singleElement().satisfies(p -> {
 			assertThat(p.id()).isEqualTo(issue.id());
 			assertThat(p.agencyName()).isEqualTo("Instituto de Desarrollo Urbano");
+			assertThat(p.localityName()).isEqualTo("Chapinero");
+			assertThat(p.channel().url()).isEqualTo("https://bogota.gov.co/yo-participo/reporta-sdqs/huecos");
+			assertThat(p.petition()).isNull();
 			assertThat(p.latitude()).isEqualTo(PARQUE_93.latitude());
 		});
+		assertThat(publicIssues.findPublic(issue.id())).isPresent();
+		assertThat(publicIssues.findPublic(UUID.randomUUID())).isEmpty();
+	}
+
+	@Test
+	void theAgencysOwnChannelWinsOverTheDefault() {
+		var lid = Issue.open(UUID.randomUUID(), DamageType.OPEN_MANHOLE, PARQUE_93, "ENEL", null, "r", T0);
+		issues.save(lid);
+
+		assertThat(publicIssues.findPublic(lid.id())).get()
+				.satisfies(p -> assertThat(p.channel().phone()).isEqualTo("Línea 115"));
+	}
+
+	private String agency(DamageType type, AssetOwner owner, String locality) {
+		return agencies.findResponsibleFor(type, owner, locality).orElseThrow().code();
 	}
 }

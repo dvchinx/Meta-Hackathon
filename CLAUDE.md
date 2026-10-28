@@ -15,10 +15,10 @@ Proyecto para el Meta Global AI Developer Hackathon (10 días). Priorizar un flu
 
 ## Alcance del MVP
 
-- Ciudad: **solo Bogotá**.
-- Tipos de daño: `POTHOLE`, `OPEN_MANHOLE`, `DAMAGED_POLE`, `RISKY_TREE`. Cualquier otro → `OTHER`, con revisión manual.
-- Las entidades se simulan: la radicación real de peticiones queda fuera de alcance. Generamos el PDF del derecho de petición y un panel de administración simula las respuestas.
-- Prioridad si hay que recortar (lo primero se recorta primero): video → formulario web de reporte → PDF de petición → ranking de entidades.
+- Ciudad: **solo Bogotá**. Un reporte se acepta solo si su punto cae en una de las 20 localidades (polígonos de Catastro en la tabla `locality`, migración V7). El mapa se limita a Colombia (`COLOMBIA_BOUNDS` en `web/src/map/maplibre.ts`).
+- Tipos de daño (decisión del 2026-10-27): `POTHOLE`, `OPEN_MANHOLE`, `DAMAGED_POLE`, `RISKY_TREE`, `STREETLIGHT_OUT`, `WATER_LEAK`, `BLOCKED_DRAIN`, `GARBAGE_DUMP`, `DAMAGED_SIDEWALK`, `DAMAGED_STREET_FURNITURE`. Cualquier otro → `OTHER`, con revisión manual. Animales quedan fuera: no encajan con la verificación por foto.
+- **La radicación es simulada**: el ciudadano radica con sus datos, generamos un radicado `SIM-AAAA-NNNNNN` y el documento imprimible del derecho de petición, el Issue pasa a `FILED`, pero no se envía nada a la entidad. Junto al radicado siempre mostramos el canal oficial real (`official_channel`). Un panel de administración simulará las respuestas.
+- Prioridad si hay que recortar (lo primero se recorta primero): video → formulario web de reporte → petición imprimible → ranking de entidades.
 - **Nunca se recorta:** flujo de WhatsApp, mapa, verificación antes/después.
 
 ## Estructura del repositorio
@@ -88,7 +88,8 @@ com.civicrepairs
 - **Report:** un envío individual de un ciudadano (medios, contexto, ubicación, salida de los modelos).
 - **Issue:** un daño físico real; agrupa uno o más Reports. Es lo que aparece en el mapa.
 - **Media:** foto, video o audio. Guardamos el original privado y una versión pública difuminada.
-- **Agency:** entidad responsable (por tipo de daño, con reglas configurables).
+- **Agency:** entidad responsable. Reglas en `agency_rule` por tipo de daño y dueño del activo (`AssetOwner`, que Muse lee de las marcas de tapas y postes: EAAB, Enel, Vanti...); la regla específica gana sobre `ANY`. Andenes y mobiliario van a la Alcaldía Local de la localidad (`by_locality`).
+- **Petition:** derecho de petición radicado (simulado) por un ciudadano sobre un Issue. Guarda una copia cifrada de los datos del peticionario. Plazo legal: 15 días hábiles desde el día siguiente (Ley 1755 de 2015), con festivos de Colombia calculados en `ColombianHolidays`.
 - **StatusTransition:** historial auditable de cada cambio de estado (quién o qué lo causó, evidencia, fecha).
 
 ### Estados del Issue
@@ -107,8 +108,9 @@ Estado auxiliar: NEEDS_MORE_EVIDENCE (la verificación no fue concluyente)
 
 Todos los modelos de Meta se consumen por la **Meta Model API** con API key (`muse-spark-1.3` y `sam-3.1`). No alojamos modelos ni usamos GPU. Endpoints, formato de las máscaras, precios y particularidades probadas: **leer `docs/meta-api.md` antes de tocar un adaptador de Meta.**
 
-1. **Interpretación (Muse Spark):** devuelve JSON validado contra un esquema:
-   `{ damageType, urgency, isValidUrbanDamage, locationHints, summary, confidence }`.
+1. **Interpretación (Muse Spark, `interpret-report.v2`):** devuelve JSON validado contra un esquema:
+   `{ damageType, assetOwner, urgency, isValidUrbanDamage, locationHints, summary, confidence }`.
+   Si la urgencia es `HIGH` en tapas, postes o árboles, la web y el bot muestran primero la Línea 123.
    Si `isValidUrbanDamage=false` o `confidence < 0.6`, el bot pide otra foto en lugar de registrar.
    Muse Spark acepta audio directamente: las notas de voz de WhatsApp van en la misma llamada, sin transcripción aparte.
 2. **Segmentación (SAM 3.1 vía API, orquestado por vision-service):** una llamada por concepto (daño, `face`, `license plate`). vision-service calcula localmente el área estimada (m²) y genera la versión difuminada.
@@ -153,7 +155,10 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 
 ## Cuentas de ciudadanos
 
-- **La web exige cuenta para reportar**; el mapa es público. Decisión del 2026-10-27: la app es para civiles que reportan problemas cotidianos, así que el registro pide **solo lo mínimo** (nombre para mostrar, correo, contraseña). Nada de cédula ni dirección: la petición sale a nombre de la plataforma.
+- **La web exige cuenta para reportar**; el mapa es público. El registro pide **solo lo mínimo** (nombre para mostrar, correo, contraseña).
+- **Datos para radicar** (decisión del 2026-10-27, reemplaza "la petición sale a nombre de la plataforma"): opcionales, se piden solo cuando el ciudadano decide radicar. Tipo y número de documento, nombres, apellidos, celular y dirección opcional (`FilerProfile`). Se guardan **cifrados con AES-256-GCM** (`PERSONAL_DATA_KEY`; sin clave, la radicación queda apagada) y **solo se comparten con la entidad ante la que se radica, al radicar**. Cada consentimiento (guardar y compartir) registra la versión de la política aceptada; el backend rechaza versiones viejas (`PrivacyPolicy.CURRENT_VERSION` = `web/src/privacy/policy.ts`).
+- La política de tratamiento de datos (Ley 1581 de 2012) vive en `web/src/privacy/PrivacyPolicyPage.tsx` (`#/privacidad`). Responsable: el equipo del hackathon. Si cambia el texto, subir la versión en ambos lados.
+- Desde WhatsApp no se piden datos personales: el bot envía el enlace `#/radicar?issue=<id>` de la web.
 - **Métodos de entrada**, en este orden: correo y contraseña (hecho), Google (hecho), celular con código por WhatsApp (cuando Meta apruebe la verificación y una plantilla de autenticación).
 - **Google:** botón oficial de Google Identity Services en modo ventana emergente (sin URI de redirección). El backend verifica el ID token con las llaves públicas de Google (`nimbus-jose-jwt`): firma RS256, `aud` = `GOOGLE_CLIENT_ID`, emisor de Google, vigencia y `email_verified`. La web obtiene el ID de cliente en tiempo de ejecución de `GET /api/auth/config`; sin él, el botón no aparece. Busca la cuenta por `google_subject` y luego por correo; si ese correo nunca se verificó, descarta la contraseña existente y cierra sus sesiones (alguien la creó sin ser dueño del correo).
 - **Hay que verificar el correo antes de reportar** (enlace por correo, vence en 24 h). Restablecer la contraseña también verifica el correo y cierra todas las sesiones.
@@ -165,7 +170,7 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 
 ## Privacidad y abuso
 
-- Nunca exponer números de teléfono: se guardan con hash y sal. La API pública nunca devuelve datos del reportante.
+- Nunca exponer números de teléfono: se guardan con hash y sal. La API pública nunca devuelve datos del reportante ni del peticionario (solo el radicado y el plazo). El documento de la petición solo lo ve quien la radicó (`Cache-Control: no-store`).
 - El mapa y la API pública **solo** sirven la versión difuminada de los medios. Originales y difuminados se guardan en directorios distintos del volumen de medios, y el backend solo sirve el público.
 - Límite de reportes por número por día (configurable).
 - Secretos solo en variables de entorno o `.env` local (en `.gitignore`). Nunca en el repo ni en los workflows.
@@ -227,7 +232,9 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 
 - No marcar un Issue como resuelto porque la entidad lo dice.
 - No agregar Kafka ni microservicios extra. Las cuentas son las descritas en "Cuentas de ciudadanos": no agregar roles, OAuth propio ni Spring Security completo. El panel admin usa `ADMIN_TOKEN`.
-- No ampliar el alcance fuera de Bogotá ni de los 4 tipos de daño.
+- No ampliar el alcance fuera de Bogotá ni de los 10 tipos de daño.
+- No radicar peticiones reales ni enviar datos de ciudadanos a entidades sin cambiar antes la política de datos.
+- No cambiar `PERSONAL_DATA_KEY` en producción: los datos guardados quedarían ilegibles.
 - No usar Muse Image: no aporta al producto.
 - No alojar modelos ni agregar dependencias de GPU.
 - No llamar a la API de Meta en tests, CI ni bucles de prueba sin caché.

@@ -15,6 +15,10 @@ import type { IssueSummary } from './issues/types'
 import { IssueMap, type EndorseHandler } from './map/IssueMap'
 import { MapPanel } from './map/MapPanel'
 import { MyReportsPage } from './me/MyReportsPage'
+import { FilerProfilePage } from './petition/FilerProfilePage'
+import { FilingPage } from './petition/FilingPage'
+import { PetitionPage } from './petition/PetitionPage'
+import { PrivacyPolicyPage } from './privacy/PrivacyPolicyPage'
 import { ReportForm } from './report/ReportForm'
 import { currentRoute, href, navigate, type Route } from './routing'
 import { Icon } from './ui/Icon'
@@ -108,6 +112,32 @@ function App() {
           <MyReportsPage />
         </RequireAccount>
       )
+      break
+    case '/radicar': {
+      const issue = route.query.get('issue')
+      page = (
+        <RequireAccount next={issue ? `/radicar?issue=${issue}` : '/radicar'} purpose="radicar">
+          <FilingPage issueId={issue} />
+        </RequireAccount>
+      )
+      break
+    }
+    case '/peticion':
+      page = (
+        <RequireAccount next="/mis-reportes">
+          <PetitionPage petitionId={route.query.get('id')} />
+        </RequireAccount>
+      )
+      break
+    case '/mis-datos':
+      page = (
+        <RequireAccount next="/mis-datos">
+          <FilerProfilePage />
+        </RequireAccount>
+      )
+      break
+    case '/privacidad':
+      page = <PrivacyPolicyPage />
       break
     default:
       page = null

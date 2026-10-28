@@ -1,5 +1,6 @@
 package com.civicrepairs.adapters.out.muse;
 
+import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.Urgency;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class MuseOutputParserTest {
 	private final MuseOutputParser parser = new MuseOutputParser(JsonMapper.builder().build());
 
 	static final String VALID = """
-			{"damageType":"POTHOLE","urgency":"HIGH","isValidUrbanDamage":true,
+			{"damageType":"OPEN_MANHOLE","assetOwner":"POWER","urgency":"HIGH","isValidUrbanDamage":true,
 			 "locationHints":["Calle 72 con Carrera 7"],"summary":"Hueco profundo en el carril derecho.","confidence":0.87}
 			""";
 
@@ -23,7 +24,8 @@ class MuseOutputParserTest {
 	void parsesAValidInterpretation() {
 		var i = parser.interpretation(VALID);
 
-		assertThat(i.damageType()).isEqualTo(DamageType.POTHOLE);
+		assertThat(i.damageType()).isEqualTo(DamageType.OPEN_MANHOLE);
+		assertThat(i.assetOwner()).isEqualTo(AssetOwner.POWER);
 		assertThat(i.urgency()).isEqualTo(Urgency.HIGH);
 		assertThat(i.validUrbanDamage()).isTrue();
 		assertThat(i.locationHints()).containsExactly("Calle 72 con Carrera 7");
@@ -35,19 +37,23 @@ class MuseOutputParserTest {
 			"",
 			"not json",
 			"[1,2]",
+			// v1 output, without assetOwner
+			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
+			// unknown asset owner
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"EAAB\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
 			// missing confidence
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\"}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\"}",
 			// extra field
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5,\"extra\":1}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5,\"extra\":1}",
 			// unknown damage type
-			"{\"damageType\":\"GRAFFITI\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
+			"{\"damageType\":\"GRAFFITI\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
 			// confidence out of range
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":1.5}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"x\",\"confidence\":1.5}",
 			// wrong types
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":\"yes\",\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":\"Calle 72\",\"summary\":\"x\",\"confidence\":0.5}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":\"yes\",\"locationHints\":[],\"summary\":\"x\",\"confidence\":0.5}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":\"Calle 72\",\"summary\":\"x\",\"confidence\":0.5}",
 			// blank summary
-			"{\"damageType\":\"POTHOLE\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"  \",\"confidence\":0.5}",
+			"{\"damageType\":\"POTHOLE\",\"assetOwner\":\"UNKNOWN\",\"urgency\":\"HIGH\",\"isValidUrbanDamage\":true,\"locationHints\":[],\"summary\":\"  \",\"confidence\":0.5}",
 	})
 	void rejectsAnythingOutsideTheSchema(String content) {
 		assertThatThrownBy(() -> parser.interpretation(content)).isInstanceOf(InvalidModelOutputException.class);

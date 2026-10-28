@@ -70,6 +70,19 @@ class ReportPersistenceAdapter implements ReportRepositoryPort {
 	}
 
 	@Override
+	public Optional<Report> findFirstConfirmedByIssue(UUID issueId) {
+		return jdbc.sql("SELECT " + COLUMNS + """
+						 FROM report
+						WHERE issue_id = :issue AND status = 'CONFIRMED'
+						ORDER BY created_at
+						LIMIT 1
+						""")
+				.param("issue", issueId)
+				.query(this::map)
+				.optional();
+	}
+
+	@Override
 	public void save(Report r) {
 		jdbc.sql("""
 						INSERT INTO report (id, channel, reporter_id, status, photo_media_id, context, latitude, longitude,

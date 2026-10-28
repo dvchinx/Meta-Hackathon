@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { messageOf } from '../api/http'
 import { fetchMyReports, type MyReport, type ReportStatus } from '../api/reports'
-import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, reportsLabel } from '../issues/labels'
+import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, canFile, deadlineLabel, reportsLabel } from '../issues/labels'
 import { href } from '../routing'
 import { Icon } from '../ui/Icon'
 import { Notice } from '../ui/Notice'
@@ -81,6 +81,32 @@ export function MyReportsPage() {
                   </div>
                 ) : (
                   <div className="muted">{REPORT_STATUS_LABELS[r.reportStatus]}</div>
+                )}
+                {r.agency && (
+                  <div className="muted report-item-meta">
+                    {r.agency}
+                    {r.locality && ` · ${r.locality}`}
+                  </div>
+                )}
+                {r.petition && (
+                  <div className="muted report-item-meta">
+                    Radicado {r.petition.radicado}
+                    {r.issueStatus === 'FILED' && ` · ${deadlineLabel(r.petition)}`}
+                  </div>
+                )}
+                {r.issueId && r.issueStatus && (
+                  <div className="report-item-actions">
+                    {canFile({ status: r.issueStatus, agency: r.agency }) && (
+                      <a className="button button-primary button-sm" href={href('/radicar', { issue: r.issueId })}>
+                        Radicar petición
+                      </a>
+                    )}
+                    {r.myPetitionId && (
+                      <a className="button button-secondary button-sm" href={href('/peticion', { id: r.myPetitionId })}>
+                        Ver mi petición
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
             </li>

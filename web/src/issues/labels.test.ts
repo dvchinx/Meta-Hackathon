@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, reportsLabel, timeOpen } from './labels'
+import { DAMAGE_LABELS, STATUS_COLORS, STATUS_LABELS, canFile, deadlineLabel, reportsLabel, timeOpen } from './labels'
 
 describe('timeOpen', () => {
   const now = new Date('2026-10-26T12:00:00Z')
@@ -28,6 +28,25 @@ describe('labels', () => {
 
   it('has a Spanish label for every status and damage type', () => {
     expect(Object.keys(STATUS_LABELS)).toHaveLength(7)
-    expect(Object.keys(DAMAGE_LABELS)).toHaveLength(5)
+    expect(Object.keys(DAMAGE_LABELS)).toHaveLength(11)
+  })
+})
+
+describe('filing', () => {
+  it('only when no petition is in progress and an agency is known', () => {
+    expect(canFile({ status: 'REPORTED', agency: 'UMV' })).toBe(true)
+    expect(canFile({ status: 'REOPENED', agency: 'UMV' })).toBe(true)
+    expect(canFile({ status: 'FILED', agency: 'UMV' })).toBe(false)
+    expect(canFile({ status: 'REPORTED', agency: null })).toBe(false)
+  })
+
+  it('describes the legal deadline', () => {
+    const petition = { radicado: 'SIM-2026-000001', filedAt: '2026-10-27T15:00:00Z', dueDate: '2026-11-19' }
+    expect(deadlineLabel({ ...petition, businessDaysLeft: 9, overdue: false })).toMatch(
+      /^Quedan 9 días hábiles para responder \(vence el 19 (de )?nov/,
+    )
+    expect(deadlineLabel({ ...petition, businessDaysLeft: 1, overdue: false })).toMatch(/^Queda 1 día hábil/)
+    expect(deadlineLabel({ ...petition, businessDaysLeft: 0, overdue: false })).toBe('El plazo para responder vence hoy')
+    expect(deadlineLabel({ ...petition, businessDaysLeft: 0, overdue: true })).toMatch(/^Plazo vencido el 19 (de )?nov/)
   })
 })

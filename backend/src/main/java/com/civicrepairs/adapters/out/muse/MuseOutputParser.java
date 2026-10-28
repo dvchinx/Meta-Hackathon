@@ -2,6 +2,7 @@ package com.civicrepairs.adapters.out.muse;
 
 import com.civicrepairs.application.port.out.LanguageModelPort.SameDamageVerdict;
 import com.civicrepairs.domain.report.Interpretation;
+import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.Urgency;
 import tools.jackson.core.JacksonException;
@@ -20,7 +21,7 @@ import java.util.Set;
 final class MuseOutputParser {
 
 	private static final Set<String> INTERPRETATION_FIELDS =
-			Set.of("damageType", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence");
+			Set.of("damageType", "assetOwner", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence");
 	private static final Set<String> SAME_DAMAGE_FIELDS = Set.of("sameDamage", "confidence", "reason");
 	static final int MAX_SUMMARY = 280;
 	static final int MAX_HINTS = 5;
@@ -54,7 +55,8 @@ final class MuseOutputParser {
 				bool(node, "isValidUrbanDamage"),
 				hintList,
 				summary,
-				probability(node, "confidence"));
+				probability(node, "confidence"),
+				enumValue(AssetOwner.class, text(node, "assetOwner")));
 	}
 
 	SameDamageVerdict sameDamage(String content) {

@@ -1,5 +1,6 @@
 import { STATUS_COLORS, STATUS_LABELS } from '../issues/labels'
 import type { IssueStatus, IssueSummary } from '../issues/types'
+import { href } from '../routing'
 import { Icon } from '../ui/Icon'
 
 const LEGEND: IssueStatus[] = ['REPORTED', 'FILED', 'AGENCY_RESPONDED', 'REPAIR_CLAIMED', 'REOPENED', 'VERIFIED']
@@ -16,7 +17,10 @@ export function MapPanel({ issues }: { issues: IssueSummary[] }) {
     <aside className="map-panel" aria-label="Resumen de los reportes">
       <div className="panel-heading">
         <h1>Daños reportados en Bogotá</h1>
-        <p>Huecos, alcantarillas, postes y árboles reportados por ciudadanos, con su estado de reparación.</p>
+        <p>
+          Huecos, alcantarillas, postes, árboles, alumbrado, agua, basuras y andenes reportados por ciudadanos, con su
+          estado de reparación.
+        </p>
       </div>
 
       <dl className="stats">
@@ -53,6 +57,10 @@ export function MapPanel({ issues }: { issues: IssueSummary[] }) {
           <strong>Solo una foto nueva cierra un caso.</strong> Que la entidad diga que lo arregló no basta: un ciudadano
           debe confirmar la reparación con una foto.
         </span>
+      </p>
+
+      <p className="panel-footer">
+        <a href={href('/privacidad')}>Política de tratamiento de datos</a>
       </p>
     </aside>
   )

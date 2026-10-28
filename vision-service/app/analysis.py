@@ -16,17 +16,30 @@ class DamageType(StrEnum):
     OPEN_MANHOLE = "OPEN_MANHOLE"
     DAMAGED_POLE = "DAMAGED_POLE"
     RISKY_TREE = "RISKY_TREE"
+    STREETLIGHT_OUT = "STREETLIGHT_OUT"
+    WATER_LEAK = "WATER_LEAK"
+    BLOCKED_DRAIN = "BLOCKED_DRAIN"
+    GARBAGE_DUMP = "GARBAGE_DUMP"
+    DAMAGED_SIDEWALK = "DAMAGED_SIDEWALK"
+    DAMAGED_STREET_FURNITURE = "DAMAGED_STREET_FURNITURE"
     OTHER = "OTHER"
 
 
 JPEG_MAGIC = b"\xff\xd8\xff"
 
 # SAM noun phrases. OTHER has no concept: it goes to manual review without damage segmentation.
+# Only "pothole" has been tried against the live API; the rest are untested (see docs/meta-api.md).
 DAMAGE_CONCEPTS: dict[DamageType, str | None] = {
     DamageType.POTHOLE: "pothole",
     DamageType.OPEN_MANHOLE: "open manhole",
     DamageType.DAMAGED_POLE: "utility pole",
     DamageType.RISKY_TREE: "tree",
+    DamageType.STREETLIGHT_OUT: "street light",
+    DamageType.WATER_LEAK: "water puddle",
+    DamageType.BLOCKED_DRAIN: "storm drain",
+    DamageType.GARBAGE_DUMP: "garbage pile",
+    DamageType.DAMAGED_SIDEWALK: "cracked sidewalk",
+    DamageType.DAMAGED_STREET_FURNITURE: "bench",
     DamageType.OTHER: None,
 }
 
