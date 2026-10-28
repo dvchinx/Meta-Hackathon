@@ -1,7 +1,12 @@
 package com.civicrepairs.adapters.in.whatsapp;
 
 import com.civicrepairs.TestcontainersConfiguration;
+import com.civicrepairs.application.port.out.IssueRepositoryPort;
 import com.civicrepairs.application.port.out.MessagingPort;
+import com.civicrepairs.application.service.IssueNotifier;
+import com.civicrepairs.domain.issue.AgencyResponseClassification;
+import com.civicrepairs.domain.issue.Issue;
+import com.civicrepairs.support.Database;
 import com.civicrepairs.support.InMemoryMessaging;
 import com.civicrepairs.support.InMemoryMessaging.Sent;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,11 +25,14 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(properties = {
 		"META_API_ENABLED=false", "VISION_SERVICE_URL=",
 		"WHATSAPP_APP_SECRET=test-app-secret", "WHATSAPP_VERIFY_TOKEN=verify-me",
-		"WHATSAPP_PHONE_NUMBER_ID=PHONE_ID", "PUBLIC_BASE_URL=https://civic.example"})
+		"WHATSAPP_PHONE_NUMBER_ID=PHONE_ID", "PUBLIC_BASE_URL=https://civic.example",
+		"PERSONAL_DATA_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "NOTIFICATIONS_POLL_INTERVAL=PT1H"})
 class WhatsAppWebhookFlowTest {
 
 	private static final String CITIZEN = "573001112233";
@@ -75,6 +84,12 @@ class WhatsAppWebhookFlowTest {
 	InMemoryMessaging messaging;
 	@Autowired
 	JdbcClient jdbc;
+	@Autowired
+	IssueRepositoryPort issues;
+	@Autowired
+	TransactionTemplate tx;
+	@Autowired
+	IssueNotifier notifier;
 
 	MockMvc mvc;
 	private final AtomicInteger ids = new AtomicInteger();
@@ -83,10 +98,7 @@ class WhatsAppWebhookFlowTest {
 	void setUp() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
 		messaging.clear();
-		for (String table : new String[] {"petition", "filer_profile", "issue_endorsement", "report", "status_transition", "issue", "model_call",
-				"media", "processed_message"}) {
-			jdbc.sql("DELETE FROM " + table).update();
-		}
+		Database.clean(jdbc);
 	}
 
 	private static String envelope(String messageJson) {
@@ -204,6 +216,40 @@ class WhatsAppWebhookFlowTest {
 		text("mmm no sé");
 
 		assertThat(messaging.sent()).singleElement().extracting(Sent::kind).isEqualTo("buttons");
+	}
+
+	@Test
+	void theAgencyClaimIsCheckedWithTheNextPhotoAndBajaStopsTheNotices() throws Exception {
+		photo();
+		location(4.676389, -74.048611);
+		button(MessagingPort.CONFIRM_YES);
+		UUID issueId = jdbc.sql("SELECT id FROM issue").query(UUID.class).single();
+		byte[] stored = jdbc.sql("SELECT recipient FROM issue_follower").query(byte[].class).single();
+		assertThat(new String(stored, StandardCharsets.ISO_8859_1)).doesNotContain(CITIZEN);
+
+		// The agency claims the repair, as the admin panel records it after a filed petition.
+		tx.executeWithoutResult(s -> {
+			Issue issue = issues.findByIdForUpdate(issueId).orElseThrow();
+			issue.file("petition-1", Instant.now());
+			issue.registerAgencyResponse(AgencyResponseClassification.RESOLVES, "response-1", Instant.now());
+			issues.save(issue);
+		});
+		messaging.clear();
+		notifier.dispatchPending();
+		assertThat(messaging.sent()).singleElement().satisfies(sent -> {
+			assertThat(sent.to()).isEqualTo(CITIZEN);
+			assertThat(sent.kind()).isEqualTo("template");
+			assertThat(sent.text()).startsWith("aviso_reparacion_reportada");
+		});
+
+		// The next photo is the verification photo. Offline, the fakes always find the damage still there.
+		photo();
+		assertThat(replies().getLast()).contains("sigue ahí");
+		mvc.perform(get("/api/issues")).andExpect(jsonPath("$[0].status").value("REOPENED"));
+
+		text("BAJA");
+		assertThat(replies().getLast()).contains("ya no te enviaremos avisos");
+		assertThat(jdbc.sql("SELECT count(*) FROM issue_follower").query(Integer.class).single()).isZero();
 	}
 
 	@Test

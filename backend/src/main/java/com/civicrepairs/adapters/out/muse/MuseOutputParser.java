@@ -1,6 +1,9 @@
 package com.civicrepairs.adapters.out.muse;
 
 import com.civicrepairs.application.port.out.LanguageModelPort.SameDamageVerdict;
+import com.civicrepairs.domain.issue.AgencyResponse;
+import com.civicrepairs.domain.issue.AgencyResponseClassification;
+import com.civicrepairs.domain.issue.RepairVerdict;
 import com.civicrepairs.domain.report.Interpretation;
 import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
@@ -23,7 +26,10 @@ final class MuseOutputParser {
 	private static final Set<String> INTERPRETATION_FIELDS =
 			Set.of("damageType", "assetOwner", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence");
 	private static final Set<String> SAME_DAMAGE_FIELDS = Set.of("sameDamage", "confidence", "reason");
+	private static final Set<String> AGENCY_RESPONSE_FIELDS = Set.of("classification", "summary", "confidence");
+	private static final Set<String> REPAIR_FIELDS = Set.of("sameLocation", "judgement", "confidence", "reason");
 	static final int MAX_SUMMARY = 280;
+	static final int MAX_REASON = 280;
 	static final int MAX_HINTS = 5;
 
 	private final JsonMapper json;
@@ -63,6 +69,32 @@ final class MuseOutputParser {
 		JsonNode node = object(content, SAME_DAMAGE_FIELDS);
 		text(node, "reason");
 		return new SameDamageVerdict(bool(node, "sameDamage"), probability(node, "confidence"));
+	}
+
+	AgencyResponse.Reading agencyResponse(String content) {
+		JsonNode node = object(content, AGENCY_RESPONSE_FIELDS);
+		return new AgencyResponse.Reading(
+				enumValue(AgencyResponseClassification.class, text(node, "classification")),
+				boundedText(node, "summary", MAX_SUMMARY),
+				probability(node, "confidence"));
+	}
+
+	/** A different place is never a verdict on the repair, whatever the model says. */
+	RepairVerdict repair(String content) {
+		JsonNode node = object(content, REPAIR_FIELDS);
+		var judgement = enumValue(RepairVerdict.Judgement.class, text(node, "judgement"));
+		if (!bool(node, "sameLocation")) {
+			judgement = RepairVerdict.Judgement.INCONCLUSIVE;
+		}
+		return new RepairVerdict(judgement, probability(node, "confidence"), boundedText(node, "reason", MAX_REASON));
+	}
+
+	private static String boundedText(JsonNode node, String field, int max) {
+		String value = text(node, field).strip();
+		if (value.isEmpty() || value.length() > max) {
+			throw new InvalidModelOutputException(field + " length " + value.length());
+		}
+		return value;
 	}
 
 	private JsonNode object(String content, Set<String> fields) {

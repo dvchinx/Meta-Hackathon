@@ -1,6 +1,7 @@
 package com.civicrepairs.adapters.in.web;
 
 import com.civicrepairs.TestcontainersConfiguration;
+import com.civicrepairs.support.Database;
 import com.civicrepairs.support.InMemoryEmail;
 import com.civicrepairs.support.WebAccounts;
 import jakarta.servlet.http.Cookie;
@@ -77,10 +78,7 @@ class ReportFlowTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
-		for (String table : new String[] {"petition", "filer_profile", "issue_endorsement", "report", "status_transition", "issue", "model_call",
-				"media", "email_token", "user_session", "user_account"}) {
-			jdbc.sql("DELETE FROM " + table).update();
-		}
+		Database.clean(jdbc);
 		citizenA = WebAccounts.registerVerified(mvc, email, "a@example.com", "Ciudadana A");
 		citizenB = WebAccounts.registerVerified(mvc, email, "b@example.com", "Ciudadano B");
 	}

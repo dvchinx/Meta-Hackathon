@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -54,8 +55,17 @@ class IssuePersistenceAdapter implements IssueRepositoryPort, GeoQueryPort {
 
 		List<StatusTransition> all = issue.transitions();
 		for (int seq = saved.transitions.size(); seq < all.size(); seq++) {
-			StatusTransitionJpaEntity transition = transitions.save(toEntity(saved, seq, all.get(seq)));
+			StatusTransition t = all.get(seq);
+			StatusTransitionJpaEntity transition = transitions.save(toEntity(saved, seq, t));
 			saved.transitions.add(transition);
+			if (t.from() != null) {
+				// Same transaction as the change: a notice is never lost, and never sent for a rolled-back change.
+				jdbc.sql("INSERT INTO notification_outbox (issue_id, to_status, created_at) VALUES (:issue, :status, :at)")
+						.param("issue", issue.id())
+						.param("status", t.to().name())
+						.param("at", Timestamp.from(t.at()))
+						.update();
+			}
 		}
 	}
 

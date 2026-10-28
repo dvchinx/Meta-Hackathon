@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /** Offline stand-in when WHATSAPP_ACCESS_TOKEN is not set: replies go to the log (with masked numbers). */
 @Component
 @ConditionalOnExpression("'${civic.whatsapp.access-token:}'.isBlank()")
@@ -26,6 +28,11 @@ class LoggingMessagingAdapter implements MessagingPort {
 	@Override
 	public void sendConfirmationRequest(String to, String question) {
 		log.info("[whatsapp → {}] {} [Sí | No]", PhoneMask.mask(to), question);
+	}
+
+	@Override
+	public void sendTemplate(String to, String template, List<String> parameters) {
+		log.info("[whatsapp → {}] template {} {}", PhoneMask.mask(to), template, parameters);
 	}
 
 	@Override

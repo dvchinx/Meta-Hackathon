@@ -101,6 +101,9 @@ export function MyReportsPage() {
                         Radicar petición
                       </a>
                     )}
+                    <a className="button button-ghost button-sm" href={href('/dano', { id: r.issueId })}>
+                      Ver detalle
+                    </a>
                     {r.myPetitionId && (
                       <a className="button button-secondary button-sm" href={href('/peticion', { id: r.myPetitionId })}>
                         Ver mi petición

@@ -30,7 +30,11 @@ export function PrivacyPolicyPage() {
               los pedimos si decides radicar una petición, los guardamos cifrados y{' '}
               <strong>solo los compartimos con la entidad ante la que radicas, en el momento de radicar</strong>.
             </li>
-            <li>El mapa es público, pero nunca muestra quién reportó ni quién radicó.</li>
+            <li>El mapa es público, pero nunca muestra quién reportó, quién radicó ni quién envió una foto.</li>
+            <li>
+              Si reportas por WhatsApp, guardamos tu número cifrado solo para avisarte del avance de ese daño, y lo
+              borramos cuando la reparación se verifica o cuando escribes BAJA.
+            </li>
             <li>Difuminamos caras y placas antes de publicar cualquier foto.</li>
             <li>No vendemos tus datos ni los usamos para publicidad.</li>
           </ul>
@@ -56,13 +60,14 @@ export function PrivacyPolicyPage() {
             <dd>Nombre para mostrar, correo electrónico y contraseña (guardamos solo su huella cifrada con BCrypt).</dd>
             <dt>WhatsApp</dt>
             <dd>
-              Tu número no se guarda: lo convertimos en un código irreversible (HMAC con sal) que solo sirve para
-              reconocer tus reportes. Los mensajes se procesan en memoria.
+              Para reconocer tus reportes usamos un código irreversible de tu número (HMAC con sal), no el número.
+              Cuando confirmas un reporte, además guardamos tu número cifrado (AES-256) solo para avisarte del avance
+              de ese daño y pedirte la foto de verificación. Los mensajes se procesan en memoria y no se guardan.
             </dd>
             <dt>Reportes</dt>
             <dd>
-              Fotos, el texto que escribas y la ubicación del daño. La foto original es privada; al mapa solo llega una
-              copia con caras y placas difuminadas.
+              Fotos, el texto que escribas y la ubicación del daño, y las fotos que envíes para verificar una
+              reparación. La foto original es privada; al mapa solo llega una copia con caras y placas difuminadas.
             </dd>
             <dt>Datos para radicar (opcionales)</dt>
             <dd>
@@ -84,7 +89,10 @@ export function PrivacyPolicyPage() {
             <li>Crear tu cuenta, iniciar sesión y confirmar tu correo.</li>
             <li>Analizar tus fotos para identificar el tipo de daño, su urgencia y la entidad responsable.</li>
             <li>Publicar el daño en el mapa (sin tus datos) y agrupar los reportes del mismo punto.</li>
-            <li>Avisarte del avance de tus reportes.</li>
+            <li>
+              Avisarte por correo o WhatsApp del avance de los daños que reportas, apoyas, radicas o verificas, y
+              pedirte una foto cuando la entidad diga que los reparó.
+            </li>
             <li>
               Solo si lo autorizas en cada caso: armar el derecho de petición a tu nombre y entregarlo a la entidad
               responsable de ese daño.
@@ -123,6 +131,10 @@ export function PrivacyPolicyPage() {
           <ul>
             <li>Datos de la cuenta: mientras tengas la cuenta.</li>
             <li>Datos para radicar: hasta que los borres desde «Mis datos para radicar».</li>
+            <li>
+              Número de WhatsApp cifrado para avisos: hasta que la reparación de ese daño se verifica o hasta que
+              escribes BAJA al bot.
+            </li>
             <li>
               Copia de los datos incluida en cada petición radicada: mientras el caso siga abierto y el tiempo necesario
               para demostrar qué se radicó. Borrar tus datos para radicar no borra las peticiones ya radicadas.

@@ -73,7 +73,23 @@ jobs:
           # Short-lived login: GITHUB_TOKEN expires with this job, and we log out right after pulling.
           echo "${{ secrets.GITHUB_TOKEN }}" | ssh "$TARGET" docker login ghcr.io -u "${{ github.actor }}" --password-stdin
           ssh "$TARGET" "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose pull; status=\$?; docker logout ghcr.io; exit \$status"
-          ssh "$TARGET" "cd $APP_DIR && IMAGE_TAG=$IMAGE_TAG docker compose up -d --remove-orphans"
+
+          # Pin the release in .env, so any later manual `docker compose up -d` on the VPS keeps running this
+          # commit instead of whatever `latest` happens to be cached there.
+          ssh "$TARGET" bash -s -- "$APP_DIR" "$IMAGE_TAG" <<'EOF'
+          set -eu
+          cd "$1"
+          previous=$(sed -n 's/^IMAGE_TAG=//p' .env | tail -n 1)
+          echo "Previous release: ${previous:-none} (roll back by setting IMAGE_TAG to it in .env)"
+          if grep -q '^IMAGE_TAG=' .env; then
+            sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=$2|" .env
+          else
+            [ -z "$(tail -c 1 .env)" ] || echo >> .env
+            echo "IMAGE_TAG=$2" >> .env
+          fi
+          EOF
+
+          ssh "$TARGET" "cd $APP_DIR && docker compose up -d --remove-orphans"
 
       - name: Wait for the backend to be healthy
         run: |

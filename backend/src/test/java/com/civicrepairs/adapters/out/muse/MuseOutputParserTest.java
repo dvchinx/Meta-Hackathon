@@ -1,5 +1,7 @@
 package com.civicrepairs.adapters.out.muse;
 
+import com.civicrepairs.domain.issue.AgencyResponseClassification;
+import com.civicrepairs.domain.issue.RepairVerdict.Judgement;
 import com.civicrepairs.domain.shared.AssetOwner;
 import com.civicrepairs.domain.shared.DamageType;
 import com.civicrepairs.domain.shared.Urgency;
@@ -73,5 +75,31 @@ class MuseOutputParserTest {
 
 		assertThat(verdict.sameDamage()).isTrue();
 		assertThat(verdict.confidence()).isEqualTo(0.8);
+	}
+
+	@Test
+	void readsAgencyResponses() {
+		var reading = parser.agencyResponse("""
+				{"classification":"RESOLVES","summary":"La entidad dice que tapó el hueco.","confidence":0.8}
+				""");
+
+		assertThat(reading.classification()).isEqualTo(AgencyResponseClassification.RESOLVES);
+		assertThat(reading.summary()).isEqualTo("La entidad dice que tapó el hueco.");
+		assertThatThrownBy(() -> parser.agencyResponse("{\"classification\":\"MAYBE\",\"summary\":\"x\",\"confidence\":0.5}"))
+				.isInstanceOf(InvalidModelOutputException.class);
+	}
+
+	@Test
+	void aDifferentPlaceIsNeverAVerdictOnTheRepair() {
+		var verdict = parser.repair("""
+				{"sameLocation":false,"judgement":"REPAIRED","confidence":0.95,"reason":"Otra calle."}
+				""");
+
+		assertThat(verdict.judgement()).isEqualTo(Judgement.INCONCLUSIVE);
+		assertThat(parser.repair("""
+				{"sameLocation":true,"judgement":"NOT_REPAIRED","confidence":0.8,"reason":"El hueco sigue ahí."}
+				""").judgement()).isEqualTo(Judgement.NOT_REPAIRED);
+		assertThatThrownBy(() -> parser.repair("{\"sameLocation\":true,\"judgement\":\"REPAIRED\",\"confidence\":0.8}"))
+				.isInstanceOf(InvalidModelOutputException.class);
 	}
 }

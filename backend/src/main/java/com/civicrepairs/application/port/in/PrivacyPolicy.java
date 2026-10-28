@@ -7,7 +7,7 @@ package com.civicrepairs.application.port.in;
  */
 public final class PrivacyPolicy {
 
-	public static final String CURRENT_VERSION = "2026-10-27";
+	public static final String CURRENT_VERSION = "2026-10-28";
 
 	private PrivacyPolicy() {
 	}

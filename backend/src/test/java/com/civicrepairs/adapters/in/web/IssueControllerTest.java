@@ -4,6 +4,7 @@ import com.civicrepairs.application.port.in.FiledPetition;
 import com.civicrepairs.application.port.in.ListPublicIssuesUseCase;
 import com.civicrepairs.application.port.in.OfficialChannel;
 import com.civicrepairs.application.port.in.PublicIssue;
+import com.civicrepairs.application.service.ReporterIds;
 import com.civicrepairs.domain.issue.IssueStatus;
 import com.civicrepairs.domain.shared.DamageType;
 import org.junit.jupiter.api.Test;
@@ -42,9 +43,10 @@ class IssueControllerTest {
 				return List.of(issues).stream().filter(i -> i.id().equals(id)).findFirst();
 			}
 		};
-		return MockMvcBuilders.standaloneSetup(new IssueController(useCase, (issueId, userId) -> {
+		var controller = new IssueController(useCase, (issueId, userId) -> {
 			throw new UnsupportedOperationException();
-		}, null, NOW)).setControllerAdvice(new ApiExceptionHandler()).build();
+		}, null, null, null, null, new ReporterIds("test-salt-at-least-16"), NOW);
+		return MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new ApiExceptionHandler()).build();
 	}
 
 	@Test

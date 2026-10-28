@@ -20,6 +20,18 @@ public enum DamageType {
 		return this == OTHER;
 	}
 
+	/**
+	 * Damage that disappears when repaired (a filled pothole, a removed garbage pile), so the SAM mask must shrink.
+	 * For the rest (a straightened pole, a pruned tree, a fixed street light) the object is still there after the
+	 * repair, and only Muse Spark's comparison of the two photos counts.
+	 */
+	public boolean areaShrinksWhenRepaired() {
+		return switch (this) {
+			case POTHOLE, OPEN_MANHOLE, WATER_LEAK, GARBAGE_DUMP, DAMAGED_SIDEWALK -> true;
+			default -> false;
+		};
+	}
+
 	/** Damage that is an emergency when urgent: the citizen is told to call 123 before anything else. */
 	public boolean isEmergencyWhenUrgent() {
 		return switch (this) {

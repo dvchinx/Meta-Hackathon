@@ -8,7 +8,10 @@ import com.civicrepairs.application.port.out.ModelCallLedgerPort.ModelCall;
 import com.civicrepairs.application.port.out.ModelUnavailableException;
 import com.civicrepairs.application.port.out.ModelUnavailableException.Reason;
 import com.civicrepairs.config.MetaApiProperties;
+import com.civicrepairs.domain.issue.AgencyResponse;
+import com.civicrepairs.domain.issue.RepairVerdict;
 import com.civicrepairs.domain.report.Interpretation;
+import com.civicrepairs.domain.shared.DamageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,6 +55,8 @@ class MuseLanguageModelAdapter implements LanguageModelPort {
 	private final MuseOutputParser parser;
 	private final MusePrompt interpretPrompt = MusePrompt.load("interpret-report.v2");
 	private final MusePrompt sameDamagePrompt = MusePrompt.load("same-damage.v1");
+	private final MusePrompt agencyResponsePrompt = MusePrompt.load("classify-agency-response.v1");
+	private final MusePrompt verifyRepairPrompt = MusePrompt.load("verify-repair.v1");
 
 	MuseLanguageModelAdapter(RestClient.Builder builder, JsonMapper json, ModelCallLedgerPort ledger,
 			ModelMetering metering, MetaApiProperties properties) {
@@ -89,6 +94,24 @@ class MuseLanguageModelAdapter implements LanguageModelPort {
 		List<Object> userContent = List.of(textPart("Image 1 (existing report):"), imagePart(existing),
 				textPart("Image 2 (new report):"), imagePart(candidate));
 		return call("SAME_DAMAGE", key, sameDamagePrompt, userContent, 1500, parser::sameDamage);
+	}
+
+	@Override
+	public AgencyResponse.Reading classifyAgencyResponse(String body) {
+		String key = ModelMetering.cacheKey("agency-response", agencyResponsePrompt.version(), properties.museModel(),
+				ModelMetering.sha256(body));
+		List<Object> userContent = List.of(textPart("Respuesta de la entidad:\n" + body));
+		return call("CLASSIFY_AGENCY_RESPONSE", key, agencyResponsePrompt, userContent, 1500, parser::agencyResponse);
+	}
+
+	@Override
+	public RepairVerdict judgeRepair(MediaContent before, MediaContent after, DamageType damageType) {
+		String key = ModelMetering.cacheKey("verify-repair", verifyRepairPrompt.version(), properties.museModel(),
+				before.media().sha256(), after.media().sha256(), damageType.name());
+		List<Object> userContent = List.of(textPart("Damage type: " + damageType.name()),
+				textPart("Image 1 (original report):"), imagePart(before),
+				textPart("Image 2 (new photo to check the repair):"), imagePart(after));
+		return call("VERIFY_REPAIR", key, verifyRepairPrompt, userContent, 2000, parser::repair);
 	}
 
 	private <T> T call(String purpose, String cacheKey, MusePrompt prompt, List<Object> userContent, int maxTokens,

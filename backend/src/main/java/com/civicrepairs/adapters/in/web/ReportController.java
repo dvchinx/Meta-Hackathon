@@ -7,6 +7,7 @@ import com.civicrepairs.application.port.in.AnalyzeReportUseCase.AnalysisResult;
 import com.civicrepairs.application.port.in.ConfirmReportUseCase;
 import com.civicrepairs.application.port.in.AuthenticatedUser;
 import com.civicrepairs.application.port.in.ConfirmReportUseCase.ConfirmationResult;
+import com.civicrepairs.application.port.in.FollowIssueUseCase;
 import com.civicrepairs.application.port.in.ReportDamageUseCase;
 import com.civicrepairs.application.port.in.ReportDamageUseCase.Photo;
 import com.civicrepairs.application.port.in.ReportDamageUseCase.Submission;
@@ -45,14 +46,16 @@ class ReportController {
 	private final ReportDamageUseCase reportDamage;
 	private final AnalyzeReportUseCase analyzeReport;
 	private final ConfirmReportUseCase confirmReport;
+	private final FollowIssueUseCase follow;
 	private final ReporterIds reporterIds;
 	private final Clock clock;
 
 	ReportController(ReportDamageUseCase reportDamage, AnalyzeReportUseCase analyzeReport,
-			ConfirmReportUseCase confirmReport, ReporterIds reporterIds, Clock clock) {
+			ConfirmReportUseCase confirmReport, FollowIssueUseCase follow, ReporterIds reporterIds, Clock clock) {
 		this.reportDamage = reportDamage;
 		this.analyzeReport = analyzeReport;
 		this.confirmReport = confirmReport;
+		this.follow = follow;
 		this.reporterIds = reporterIds;
 		this.clock = clock;
 	}
@@ -84,7 +87,11 @@ class ReportController {
 	@PostMapping("/{id}/confirmation")
 	ConfirmationResponse confirm(AuthenticatedUser user, @PathVariable UUID id, @RequestBody ConfirmationRequest request) {
 		requireVerified(user);
-		return ConfirmationResponse.from(confirmReport.confirm(id, reporterIds.forUser(user.id()), request.accepted()));
+		ConfirmationResult result = confirmReport.confirm(id, reporterIds.forUser(user.id()), request.accepted());
+		if (result.accepted()) {
+			follow.followWithAccount(result.issueId(), user.id());
+		}
+		return ConfirmationResponse.from(result);
 	}
 
 	private static void requireVerified(AuthenticatedUser user) {

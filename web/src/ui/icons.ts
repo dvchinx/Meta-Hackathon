@@ -15,6 +15,7 @@ import mapPin from '../assets/icons/map-pin.svg'
 import map from '../assets/icons/map.svg'
 import plus from '../assets/icons/plus.svg'
 import refresh from '../assets/icons/refresh.svg'
+import share from '../assets/icons/share.svg'
 import shield from '../assets/icons/shield.svg'
 import user from '../assets/icons/user.svg'
 
@@ -35,6 +36,7 @@ export const icons = {
   map,
   plus,
   refresh,
+  share,
   shield,
   user,
 } as const

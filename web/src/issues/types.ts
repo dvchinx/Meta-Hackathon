@@ -53,3 +53,22 @@ export interface IssueSummary {
   officialChannel: OfficialChannel | null
   petition: PetitionStatus | null
 }
+
+export type VerificationOutcome = 'REPAIRED' | 'NOT_REPAIRED' | 'INCONCLUSIVE'
+export type AgencyResponseClassification = 'RESOLVES' | 'EVASIVE' | 'NO_RESPONSE'
+
+/** Public timeline of an Issue (GET /api/issues/{id}/history). No data about who did what. */
+export interface IssueHistory {
+  steps: { from: IssueStatus | null; to: IssueStatus; cause: string; at: string }[]
+  agencyResponses: { at: string; classification: AgencyResponseClassification; summary: string; body: string }[]
+  /** photoUrl: the new photo, blurred. */
+  verifications: { at: string; outcome: VerificationOutcome; reason: string; photoUrl: string }[]
+}
+
+export interface VerificationReceipt {
+  issueId: string
+  outcome: VerificationOutcome
+  status: IssueStatus
+  reason: string
+  photoUrl: string
+}

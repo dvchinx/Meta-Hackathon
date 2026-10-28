@@ -1,5 +1,6 @@
 package com.civicrepairs.application.service;
 
+import com.civicrepairs.domain.issue.VerificationResult;
 import com.civicrepairs.domain.report.Interpretation;
 import com.civicrepairs.domain.report.MissingItem;
 import com.civicrepairs.domain.shared.DamageType;
@@ -70,9 +71,32 @@ final class BotMessages {
 				? "Tu reporte quedó registrado ✅ Es el primero de este daño."
 				: "Tu reporte quedó registrado ✅ Otras personas ya habían reportado este daño: ahora son "
 						+ reportCount + " reportes.";
-		return what + "\n\nTe avisaremos cuando la entidad responda y cuando verifiquemos la reparación con una foto."
+		return what + "\n\nTe avisaremos por aquí cuando la entidad responda y cuando haya que verificar la reparación "
+				+ "con una foto. Para eso guardamos tu número cifrado y lo borramos cuando el daño quede reparado. "
+				+ "Escribe BAJA si no quieres avisos."
 				+ "\nMapa: " + mapUrl
 				+ "\n\n¿Quieres radicar la petición ante la entidad con tus datos? Hazlo desde la web: " + fileUrl;
+	}
+
+	static final String UNSUBSCRIBED =
+			"Listo, ya no te enviaremos avisos y borramos tu número de nuestra lista. Si reportas otro daño, volverás a "
+					+ "recibir avisos de ese daño.";
+
+	static final String NOT_SUBSCRIBED = "No tenías avisos activos. Si quieres reportar un daño, envíame una foto 📷";
+
+	static final String VERIFYING = "Recibí la foto 📷 La estoy comparando con la del reporte original, dame unos segundos…";
+
+	static String verified(VerificationResult.Outcome outcome, String reason) {
+		String detail = reason == null || reason.isBlank() ? "" : "\n" + reason;
+		String next = "\n\nSi quieres reportar otro daño, envíame una foto nueva.";
+		return switch (outcome) {
+			case REPAIRED -> "¡Gracias! ✅ La foto confirma la reparación: el daño queda como *reparado verificado*."
+					+ detail + next;
+			case NOT_REPAIRED -> "Gracias. La foto muestra que el daño sigue ahí ❌ Lo reabrimos para volver a exigir "
+					+ "la reparación." + detail + next;
+			case INCONCLUSIVE -> "No pudimos confirmarlo con esta foto 🤔 ¿Me envías otra, desde un ángulo parecido al "
+					+ "original y con buena luz?" + detail;
+		};
 	}
 
 	static String label(DamageType type) {

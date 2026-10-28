@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["classification", "summary", "confidence"],
+  "properties": {
+    "classification": { "type": "string", "enum": ["RESOLVES", "EVASIVE", "NO_RESPONSE"] },
+    "summary": { "type": "string" },
+    "confidence": { "type": "number" }
+  }
+}

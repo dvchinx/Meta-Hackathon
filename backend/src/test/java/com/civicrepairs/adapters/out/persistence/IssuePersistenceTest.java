@@ -52,7 +52,10 @@ class IssuePersistenceTest {
 
 	@BeforeEach
 	void clean() {
-		jdbc.sql("DELETE FROM petition").update();
+		for (String table : new String[] {"notification_outbox", "pending_verification", "issue_follower",
+				"verification", "agency_response", "petition"}) {
+			jdbc.sql("DELETE FROM " + table).update();
+		}
 		jdbc.sql("DELETE FROM status_transition").update();
 		jdbc.sql("DELETE FROM issue").update();
 	}

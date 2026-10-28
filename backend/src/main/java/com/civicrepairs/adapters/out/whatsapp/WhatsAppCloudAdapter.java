@@ -35,6 +35,7 @@ class WhatsAppCloudAdapter implements MessagingPort {
 
 	private final RestClient graph;
 	private final String phoneNumberId;
+	private final String templateLanguage;
 
 	WhatsAppCloudAdapter(RestClient.Builder builder, WhatsAppProperties properties) {
 		this.graph = builder.clone()
@@ -42,6 +43,7 @@ class WhatsAppCloudAdapter implements MessagingPort {
 				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + properties.accessToken())
 				.build();
 		this.phoneNumberId = properties.phoneNumberId();
+		this.templateLanguage = properties.templateLanguage();
 	}
 
 	@Override
@@ -72,6 +74,15 @@ class WhatsAppCloudAdapter implements MessagingPort {
 				"type", "button",
 				"body", Map.of("text", question),
 				"action", Map.of("buttons", buttons))));
+	}
+
+	@Override
+	public void sendTemplate(String to, String template, List<String> parameters) {
+		var body = parameters.stream().map(p -> Map.of("type", "text", "text", p)).toList();
+		send(to, "template " + template, Map.of("type", "template", "template", Map.of(
+				"name", template,
+				"language", Map.of("code", templateLanguage),
+				"components", List.of(Map.of("type", "body", "parameters", body)))));
 	}
 
 	@Override

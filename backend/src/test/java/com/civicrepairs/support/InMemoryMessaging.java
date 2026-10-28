@@ -29,6 +29,11 @@ public class InMemoryMessaging implements MessagingPort {
 	}
 
 	@Override
+	public void sendTemplate(String to, String template, List<String> parameters) {
+		sent.add(new Sent(to, "template", template + " " + parameters));
+	}
+
+	@Override
 	public DownloadedMedia downloadMedia(String mediaId) {
 		return new DownloadedMedia(("photo-" + mediaId).getBytes(), "image/jpeg");
 	}

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sameLocation", "judgement", "confidence", "reason"],
+  "properties": {
+    "sameLocation": { "type": "boolean" },
+    "judgement": { "type": "string", "enum": ["REPAIRED", "NOT_REPAIRED", "INCONCLUSIVE"] },
+    "confidence": { "type": "number" },
+    "reason": { "type": "string" }
+  }
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { messageOf } from './api/http'
 import { fetchIssues } from './api/issues'
 import { endorseIssue } from './api/reports'
@@ -11,18 +11,31 @@ import { RequireAccount } from './auth/RequireAccount'
 import { ResetPasswordPage } from './auth/ResetPasswordPage'
 import { UserMenu } from './auth/UserMenu'
 import { VerifyEmailPage } from './auth/VerifyEmailPage'
+import { localitiesOf, matches, NO_FILTERS, within, type Bounds, type IssueFilters } from './issues/filters'
 import type { IssueSummary } from './issues/types'
-import { IssueMap, type EndorseHandler } from './map/IssueMap'
+import type { EndorseHandler, MapFocus } from './map/IssueMap'
 import { MapPanel } from './map/MapPanel'
 import { MyReportsPage } from './me/MyReportsPage'
 import { FilerProfilePage } from './petition/FilerProfilePage'
 import { FilingPage } from './petition/FilingPage'
-import { PetitionPage } from './petition/PetitionPage'
 import { PrivacyPolicyPage } from './privacy/PrivacyPolicyPage'
-import { ReportForm } from './report/ReportForm'
 import { currentRoute, href, navigate, type Route } from './routing'
 import { Icon } from './ui/Icon'
 import { Notice } from './ui/Notice'
+
+// MapLibre is most of the bundle: the map, the report form (location picker) and the rarely used pages load on
+// demand, so sign-in and the other light pages start fast.
+const IssueMap = lazy(() => import('./map/IssueMap').then((m) => ({ default: m.IssueMap })))
+const ReportForm = lazy(() => import('./report/ReportForm').then((m) => ({ default: m.ReportForm })))
+const IssueDetailPage = lazy(() => import('./issue/IssueDetailPage').then((m) => ({ default: m.IssueDetailPage })))
+const PetitionPage = lazy(() => import('./petition/PetitionPage').then((m) => ({ default: m.PetitionPage })))
+const AdminPage = lazy(() => import('./admin/AdminPage').then((m) => ({ default: m.AdminPage })))
+
+const loading = (
+  <div className="page">
+    <div className="spinner" aria-label="Cargando" />
+  </div>
+)
 
 function App() {
   const [route, setRoute] = useState<Route>(currentRoute)
@@ -30,6 +43,9 @@ function App() {
   const [issues, setIssues] = useState<IssueSummary[]>([])
   const [error, setError] = useState(false)
   const [mapNotice, setMapNotice] = useState<string | null>(null)
+  const [filters, setFilters] = useState<IssueFilters>(NO_FILTERS)
+  const [bounds, setBounds] = useState<Bounds | null>(null)
+  const [focus, setFocus] = useState<MapFocus | null>(null)
 
   useEffect(() => {
     const onHash = () => setRoute(currentRoute())
@@ -57,7 +73,12 @@ function App() {
     return () => controller.abort()
   }, [onMap])
 
+  const filtered = useMemo(() => issues.filter((i) => matches(i, filters)), [issues, filters])
+  const visible = useMemo(() => (bounds ? filtered.filter((i) => within(i, bounds)) : filtered), [filtered, bounds])
+  const localities = useMemo(() => localitiesOf(issues), [issues])
+
   const showMap = useCallback(() => navigate('/'), [])
+  const select = useCallback((issue: IssueSummary) => setFocus({ id: issue.id, nonce: Date.now() }), [])
 
   const endorse = useCallback<EndorseHandler>(
     async (issue) => {
@@ -113,6 +134,9 @@ function App() {
         </RequireAccount>
       )
       break
+    case '/dano':
+      page = <IssueDetailPage key={route.query.get('id')} issueId={route.query.get('id')} />
+      break
     case '/radicar': {
       const issue = route.query.get('issue')
       page = (
@@ -138,6 +162,9 @@ function App() {
       break
     case '/privacidad':
       page = <PrivacyPolicyPage />
+      break
+    case '/admin':
+      page = <AdminPage />
       break
     default:
       page = null
@@ -173,9 +200,18 @@ function App() {
       <div className="app-body">
         {onMap ? (
           <main className="map-layout">
-            <MapPanel issues={issues} />
+            <MapPanel
+              issues={filtered}
+              visible={visible}
+              localities={localities}
+              filters={filters}
+              onFiltersChange={setFilters}
+              onSelect={select}
+            />
             <div className="map-area">
-              <IssueMap issues={issues} onEndorse={endorse} />
+              <Suspense fallback={<div className="issue-map map-loading" aria-label="Cargando el mapa" />}>
+                <IssueMap issues={filtered} onEndorse={endorse} focus={focus} onViewChange={setBounds} />
+              </Suspense>
               {(error || mapNotice) && (
                 <div className="map-status">
                   <Notice tone="error">
@@ -186,7 +222,9 @@ function App() {
             </div>
           </main>
         ) : (
-          <main className="page-scroll">{page}</main>
+          <main className="page-scroll">
+            <Suspense fallback={loading}>{page}</Suspense>
+          </main>
         )}
       </div>
     </div>

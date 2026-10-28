@@ -1,6 +1,7 @@
 package com.civicrepairs.adapters.in.web;
 
 import com.civicrepairs.application.port.in.AccountException;
+import com.civicrepairs.application.port.in.IssueActionException;
 import com.civicrepairs.application.port.in.PetitionException;
 import com.civicrepairs.application.port.in.ReportNotFoundException;
 import com.civicrepairs.application.port.out.PersonalDataUnavailableException;
@@ -41,6 +42,18 @@ class ApiExceptionHandler {
 			case INVALID_PROFILE -> HttpStatus.BAD_REQUEST;
 			case ISSUE_NOT_FOUND, PETITION_NOT_FOUND -> HttpStatus.NOT_FOUND;
 			case PROFILE_REQUIRED, POLICY_OUTDATED, ALREADY_FILED, NOT_FILEABLE -> HttpStatus.CONFLICT;
+		};
+		return ResponseEntity.status(status).body(new ApiError(e.code().name(), e.getMessage()));
+	}
+
+	@ExceptionHandler(IssueActionException.class)
+	ResponseEntity<ApiError> issueAction(IssueActionException e) {
+		HttpStatus status = switch (e.code()) {
+			case NOT_FOUND -> HttpStatus.NOT_FOUND;
+			case WRONG_STATUS -> HttpStatus.CONFLICT;
+			case INVALID_INPUT -> HttpStatus.BAD_REQUEST;
+			case RATE_LIMITED -> HttpStatus.TOO_MANY_REQUESTS;
+			case MODELS_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
 		};
 		return ResponseEntity.status(status).body(new ApiError(e.code().name(), e.getMessage()));
 	}

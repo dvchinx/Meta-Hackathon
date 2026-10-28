@@ -116,8 +116,8 @@ Todos los modelos de Meta se consumen por la **Meta Model API** con API key (`mu
 2. **Segmentación (SAM 3.1 vía API, orquestado por vision-service):** una llamada por concepto (daño, `face`, `license plate`). vision-service calcula localmente el área estimada (m²) y genera la versión difuminada.
 3. **Confirmación:** el bot envía el resumen con la imagen marcada. Solo después de que el usuario confirma se crea o actualiza el Issue. El formulario web usa el mismo flujo (`POST /api/reports` y `POST /api/reports/{id}/confirmation`), que además sirve para probar todo sin WhatsApp.
 4. **Deduplicación:** `ST_DWithin` a 30 m + mismo `damageType` + Muse Spark compara las dos fotos difuminadas (`same-damage.v1`, confianza ≥ 0,7) → se suma al Issue existente. Si Muse no está disponible, se une al candidato más cercano.
-5. **Respuesta de la entidad (Muse Spark):** clasifica la respuesta en `RESOLVES`, `EVASIVE` o `NO_RESPONSE`.
-6. **Verificación antes/después:** proporción de áreas de las máscaras de SAM + juicio de Muse Spark con ambas imágenes superpuestas. Si no coinciden → `NEEDS_MORE_EVIDENCE`.
+5. **Respuesta de la entidad (Muse Spark, `classify-agency-response.v1`):** clasifica la respuesta en `RESOLVES`, `EVASIVE` o `NO_RESPONSE`. Las respuestas se escriben en el panel admin (`#/admin`, `POST /api/admin/...` con la cabecera `X-Admin-Token` = `ADMIN_TOKEN`; sin token, la API admin no existe).
+6. **Verificación antes/después (`verify-repair.v1`):** solo con el Issue en `REPAIR_CLAIMED` o `NEEDS_MORE_EVIDENCE`. Muse Spark compara la foto original difuminada con la nueva difuminada (si no es el mismo lugar → inconcluso). Para daños que desaparecen al repararse (`DamageType.areaShrinksWhenRepaired`: hueco, tapa, fuga, basuras, andén) el área de SAM también debe coincidir (≤ 30 % de la original = reparado). Reglas en `RepairCheck`. Si no coinciden → `NEEDS_MORE_EVIDENCE`. En modo fake el juicio siempre es "sigue dañado".
 
 Reglas:
 
@@ -149,7 +149,9 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 - Validar la firma `X-Hub-Signature-256` de cada petición con el app secret.
 - El bot acepta los datos **en cualquier orden** y en un mismo mensaje. Solo pide lo que falta.
 - Ubicación: pin de WhatsApp que el usuario puede mover. No depender del GPS de la foto, porque WhatsApp elimina esos metadatos.
-- Fuera de la ventana de 24 horas solo se envían **plantillas aprobadas**. Los textos de las plantillas viven en `docs/whatsapp-templates.md`.
+- Fuera de la ventana de 24 horas solo se envían **plantillas aprobadas**. Los textos de las plantillas viven en `docs/whatsapp-templates.md` (nombres y variables sincronizados con `IssueNotices`).
+- **Avisos** (decisión del 2026-10-28): al confirmar un reporte, el número se guarda **cifrado** (`issue_follower`, `PERSONAL_DATA_KEY`) solo para avisar del avance de ese daño; se borra cuando el Issue queda `VERIFIED` o cuando el ciudadano escribe **BAJA**. Tras el aviso de `REPAIR_CLAIMED`, la siguiente foto de ese número (7 días) es la foto de verificación (`pending_verification`).
+- Los cambios de estado se notifican con un **outbox transaccional** (`notification_outbox`, escrito al guardar el Issue) que `IssueNotifier` despacha cada `NOTIFICATIONS_POLL_INTERVAL`: correo a las cuentas web que siguen el daño (reportaron, apoyaron, radicaron o verificaron) y plantilla de WhatsApp. Un cambio ya superado (p. ej. `AGENCY_RESPONDED` seguido de `REPAIR_CLAIMED`) no se avisa.
 - Los mensajes al usuario van en español colombiano, cortos y claros.
 - URL del webhook en producción: `https://civic.jesusflorez.cloud/webhooks/whatsapp`. En local se usa un túnel (cloudflared o ngrok).
 
@@ -170,7 +172,7 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 
 ## Privacidad y abuso
 
-- Nunca exponer números de teléfono: se guardan con hash y sal. La API pública nunca devuelve datos del reportante ni del peticionario (solo el radicado y el plazo). El documento de la petición solo lo ve quien la radicó (`Cache-Control: no-store`).
+- Nunca exponer números de teléfono: se identifican con hash y sal; el único número guardado es el cifrado para avisos (ver WhatsApp). La API pública nunca devuelve datos del reportante ni del peticionario (solo el radicado y el plazo). El documento de la petición solo lo ve quien la radicó (`Cache-Control: no-store`).
 - El mapa y la API pública **solo** sirven la versión difuminada de los medios. Originales y difuminados se guardan en directorios distintos del volumen de medios, y el backend solo sirve el público.
 - Límite de reportes por número por día (configurable).
 - Secretos solo en variables de entorno o `.env` local (en `.gitignore`). Nunca en el repo ni en los workflows.
@@ -208,7 +210,8 @@ Red interna civic: civic-backend, civic-vision, civic-postgres (PostGIS), volume
   4. Por SSH: `docker login` en GHCR con el `GITHUB_TOKEN` del job, `docker compose pull`, `docker logout`, `docker compose up -d`. Así funcionan paquetes privados sin dejar credenciales en el VPS.
   5. Espera a que `civic-backend` esté `healthy` y prueba `https://civic.jesusflorez.cloud/`.
 - Secretos de GitHub: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`. Los secretos de la aplicación viven solo en `/opt/civic-repairs/.env` del VPS (plantilla: `.env.example`), **no** en GitHub.
-- Rollback: en el VPS, `IMAGE_TAG=sha-<anterior> docker compose up -d`.
+- `deploy.yml` escribe `IMAGE_TAG=sha-<commit>` en el `.env` del VPS en cada despliegue (y deja en el log la etiqueta anterior), así un `docker compose up -d` manual nunca vuelve a una `latest` vieja.
+- Rollback: en el VPS, poner `IMAGE_TAG=sha-<anterior>` en `/opt/civic-repairs/.env` y `docker compose up -d`.
 - Datos persistentes en volúmenes con nombre (`pgdata`, `media`). Nunca usar `docker compose down -v` en producción.
 - El VPS ya tiene mucha carga (Kafka, MySQL, varios Spring Boot). Ponerles límite de memoria a nuestros contenedores (`mem_limit`, `-XX:MaxRAMPercentage`).
 
@@ -246,7 +249,8 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 
 - [x] SAM 3.1 y Muse Spark disponibles en la Meta Model API (probado el 2026-10-26, ver `docs/meta-api.md`).
 - [x] Muse Spark acepta audio directamente.
-- [ ] Número de prueba de WhatsApp Cloud API y plantillas enviadas a aprobación.
+- [ ] Número de prueba de WhatsApp Cloud API y plantillas de `docs/whatsapp-templates.md` enviadas a aprobación.
+- [ ] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt `verify-repair.v1` con fotos reales de antes y después.
 - [x] VPS: red `deploy_personal-network`, ~3,2 GB de RAM disponibles, sin swap.
 - [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
 - [ ] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
