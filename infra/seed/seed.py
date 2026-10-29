@@ -2,6 +2,7 @@
 
     python seed.py candidates [key ...]   Mapillary photos around each scene, to choose the base photo
     python seed.py pick KEY IMAGE_ID      use that photo: moves the scene's point to where it was taken
+                                          (--as after: the unedited "somewhere else" photo of a check)
     python seed.py run [key ...]          reports, "yo también", petitions, agency replies and checks (local backend)
     python seed.py reset KEY              deletes that scene's Issue locally, to run it again
     python seed.py export                 out/seed.sql + out/media.tar for production
@@ -24,6 +25,7 @@ from zoneinfo import ZoneInfo
 import holidays
 import psycopg
 import requests
+from PIL import Image
 from psycopg import sql
 
 SEED_DIR = Path(__file__).resolve().parent
@@ -105,23 +107,38 @@ def save_state(state: dict) -> None:
 MAPILLARY_FIELDS = "id,captured_at,compass_angle,computed_geometry,geometry,thumb_2048_url,creator,is_pano"
 
 
+def nearby_images(token: str, lat: float, lon: float) -> list[dict]:
+    """Street photos within ~130 m; if there are none, in small boxes further out (big boxes time out)."""
+    d = 0.0012
+    for ring in (0, 0.0025, 0.005):
+        offsets = (
+            [(0, 0)] if ring == 0 else [(dy, dx) for dy in (-ring, 0, ring) for dx in (-ring, 0, ring) if dy or dx]
+        )
+        for dy, dx in offsets:
+            y, x = lat + dy, lon + dx
+            r = requests.get(
+                "https://graph.mapillary.com/images",
+                timeout=30,
+                params={
+                    "access_token": token,
+                    "fields": MAPILLARY_FIELDS,
+                    "limit": 60,
+                    "bbox": f"{x - d},{y - d},{x + d},{y + d}",
+                },
+            )
+            if r.status_code >= 400:  # never print the URL: it carries the token
+                print(f"  Mapillary HTTP {r.status_code} around {y:.4f},{x:.4f}, skipped")
+                continue
+            images = [i for i in r.json().get("data", []) if not i.get("is_pano")]
+            if images:
+                return images
+    return []
+
+
 def candidates(config: dict, keys: list[str]) -> None:
     token = ENV.get("MAPILLARY_TOKEN") or sys.exit("Set MAPILLARY_TOKEN in .env (free at mapillary.com/developer).")
     for scene in selected(config, keys):
-        lat, lon = scene["point"]
-        d = 0.0012  # ~130 m around the point
-        r = requests.get(
-            "https://graph.mapillary.com/images",
-            timeout=30,
-            params={
-                "access_token": token,
-                "fields": MAPILLARY_FIELDS,
-                "limit": 60,
-                "bbox": f"{lon - d},{lat - d},{lon + d},{lat + d}",
-            },
-        )
-        r.raise_for_status()
-        images = [i for i in r.json().get("data", []) if not i.get("is_pano")]
+        images = nearby_images(token, *scene["point"])
         images.sort(key=lambda i: i.get("captured_at", 0), reverse=True)
         target = WORK / "candidates" / scene["key"]
         shutil.rmtree(target, ignore_errors=True)
@@ -132,10 +149,19 @@ def candidates(config: dict, keys: list[str]) -> None:
         print(f"{scene['key']}: {min(len(images), 8)} candidates in {target.relative_to(ROOT)}")
 
 
-def pick(config: dict, key: str, image_id: str) -> None:
+def pick(config: dict, key: str, image_id: str, role: str) -> None:
     scene = selected(config, [key])[0]
     meta = json.loads((WORK / "candidates" / key / "meta.json").read_text())
     image = next((i for i in meta if i["id"] == image_id), None) or sys.exit(f"{image_id} is not a candidate of {key}")
+    (IMAGES / key).mkdir(parents=True, exist_ok=True)
+    source = WORK / "candidates" / key / f"{image_id}.jpg"
+    if role == "after":
+        # A photo of somewhere else, unedited: the check cannot recognise the place (NEEDS_MORE_EVIDENCE).
+        crop_dashcam_strip(source, IMAGES / key / "after.jpg")
+        scene["afterPhoto"] = image_id
+        SCENES_FILE.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n")
+        print(f"{key}: after photo {image_id}")
+        return
     lon, lat = (image.get("computed_geometry") or image["geometry"])["coordinates"]
     scene["point"] = [round(lat, 6), round(lon, 6)]
     scene["base"] = {
@@ -143,10 +169,19 @@ def pick(config: dict, key: str, image_id: str) -> None:
         "creator": image.get("creator", {}).get("username"),
         "capturedAt": image.get("captured_at"),
     }
-    (IMAGES / key).mkdir(parents=True, exist_ok=True)
-    shutil.copy(WORK / "candidates" / key / f"{image_id}.jpg", IMAGES / key / "base.jpg")
+    crop_dashcam_strip(source, IMAGES / key / "base.jpg")
+    if scene.get("edit") is None:
+        # The street photo already shows the damage: it is the report photo as it is.
+        shutil.copy(IMAGES / key / "base.jpg", IMAGES / key / "before.jpg")
     SCENES_FILE.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n")
     print(f"{key}: base photo {image_id}, point moved to {scene['point']}")
+
+
+def crop_dashcam_strip(source: Path, target: Path) -> None:
+    """Most Bogotá imagery comes from dashcams that print speed and model along the bottom edge."""
+    with Image.open(source) as image:
+        width, height = image.size
+        image.crop((0, 0, width, round(height * 0.955))).save(target, quality=92)
 
 
 def credit(scene: dict) -> str | None:
@@ -154,7 +189,8 @@ def credit(scene: dict) -> str | None:
     if not base:
         return None
     author = f"{base['creator']} en Mapillary" if base.get("creator") else "Mapillary"
-    return f"Foto base: {author} (CC BY-SA 4.0), imagen {base['mapillaryId']}. Daño agregado con IA."
+    edited = "editada con IA" if scene.get("edit") else "sin editar"
+    return f"Foto base: {author} (CC BY-SA 4.0), imagen {base['mapillaryId']}, {edited}."
 
 
 # --- Running the flow --------------------------------------------------------------------------------------------
@@ -509,6 +545,7 @@ def main() -> None:
     picking = sub.add_parser("pick")
     picking.add_argument("key")
     picking.add_argument("image_id")
+    picking.add_argument("--as", dest="role", choices=["base", "after"], default="base")
     sub.add_parser("run").add_argument("keys", nargs="*")
     sub.add_parser("reset").add_argument("key")
     sub.add_parser("export")
@@ -520,7 +557,7 @@ def main() -> None:
             case "candidates":
                 candidates(config, args.keys)
             case "pick":
-                pick(config, args.key, args.image_id)
+                pick(config, args.key, args.image_id, args.role)
             case "run":
                 run(config, args.keys)
             case "reset":

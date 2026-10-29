@@ -149,8 +149,8 @@ export function IssueDetailPage({ issueId }: { issueId: string | null }) {
 
           {issue.example && (
             <Notice>
-              <strong>Daño de ejemplo para la demostración.</strong> Sus fotos se editaron con IA sobre una foto real de
-              la calle y su historial está simulado; los reportes ciudadanos no llevan esta etiqueta.
+              <strong>Daño de ejemplo para la demostración.</strong> Sus fotos parten de una foto real de la calle, por
+              lo general editada con IA, y su historial está simulado; los reportes ciudadanos no llevan esta etiqueta.
               {issue.example.credit && <span className="example-credit">{issue.example.credit}</span>}
             </Notice>
           )}

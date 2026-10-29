@@ -70,7 +70,10 @@ Petición (imagen en base64; **probado** con una foto de un bache de 960×720):
 - Pedimos `metadata.mask_encoding: "one_bit"` (más pequeño; solo necesitamos máscaras binarias). Probado de punta a punta.
 - **Las máscaras de instancias no se solapan:** en la prueba del bache, SAM separó el hueco profundo y el área desgastada alrededor, y cada píxel pertenece a un solo objeto. El área del daño es la **unión** de todas las detecciones.
 - **SAM es sensible a la re-codificación cerca de su umbral:** la misma foto devolvió el área desgastada alrededor del bache (c≈0,66) al enviarla tal cual, y no la devolvió con una copia re-codificada a calidad 85. vision-service manda los JPEG que no necesitan reducción byte por byte. Para antes/después, ambas fotos deben pasar por el mismo camino.
-- **Conceptos por tipo de daño** (`DAMAGE_CONCEPTS` en `vision-service/app/analysis.py`): solo `"pothole"` está probado en vivo. Los demás (`"open manhole"`, `"utility pole"`, `"tree"`, `"street light"`, `"water puddle"`, `"storm drain"`, `"garbage pile"`, `"cracked sidewalk"`, `"bench"`) son frases sin probar: validarlas con una foto de `eval/` cada una antes de la demo. Si SAM no detecta nada, el reporte sigue (área 0), pero la foto marcada sale sin resaltar.
+- **Conceptos por tipo de daño** (`DAMAGE_CONCEPTS` en `vision-service/app/analysis.py`), **probados** el 2026-10-28 con los 15 daños de ejemplo (`infra/seed/`: fotos de Mapillary con el daño agregado por IA, no fotos de ciudadanos):
+  - Detectan el daño: `"pothole"` (0,8–2 % de la foto), `"open manhole"`, `"utility pole"`, `"tree"`, `"street light"`, `"garbage pile"` (9–12 %), `"bench"`. `"storm drain"` detecta la rejilla, pero muy pequeña (0,04 %).
+  - **No detectan nada:** `"water puddle"` (ni con un chorro y un charco grandes) y `"cracked sidewalk"`. Esos reportes quedan con área 0 y la foto marcada sale sin resaltar. Hay que probar otras frases (p. ej. `"puddle"`, `"water"`, `"broken pavement"`).
+  - Con área 0 en la foto original, `RepairCheck` hoy da por buena una reparación y bloquea "sigue dañado" (la proporción 0/0 cuenta como 0). Pasó en la verificación del andén de ejemplo.
 - `"face"` también detecta caras de animales (en una prueba difuminó la cara de un burro). Difuminar de más es aceptable; lo peligroso sería difuminar de menos.
 
 ## Costo estimado por reporte

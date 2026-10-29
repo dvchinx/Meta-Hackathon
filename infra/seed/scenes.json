@@ -15,230 +15,455 @@
       "key": "kennedy-hueco",
       "damageType": "POTHOLE",
       "locality": "Kennedy",
-      "point": [4.6268, -74.1505],
+      "point": [
+        4.626495,
+        -74.151061
+      ],
       "target": "VERIFIED",
       "reporter": 0,
-      "endorsers": [1, 2, 3, 4],
+      "endorsers": [
+        1,
+        2,
+        3,
+        4
+      ],
       "verifier": 5,
-      "timeline": { "opened": 46, "filed": 44, "response": 23, "verified": 16 },
+      "timeline": {
+        "opened": 46,
+        "filed": 44,
+        "response": 23,
+        "verified": 16
+      },
       "context": "Este hueco lleva más de un mes en el carril derecho. Los buses lo esquivan y ya se han caído dos motos, sobre todo cuando llueve y no se ve.",
       "agencyResponse": "En atención a su petición, la Unidad Administrativa Especial de Rehabilitación y Mantenimiento Vial informa que el día de ayer la cuadrilla de bacheo intervino el punto señalado, retirando el material suelto y aplicando mezcla asfáltica en caliente. La intervención quedó terminada y la vía está habilitada.",
       "edit": {
         "before": "a deep pothole about 1 m wide in the right lane, broken asphalt edges, muddy water inside",
         "after": "the same pothole filled with a fresh dark asphalt patch, clean square edges, no hole left"
+      },
+      "base": {
+        "mapillaryId": "1469402757525827",
+        "creator": "MiguelForero",
+        "capturedAt": 1755705885148
       }
     },
     {
       "key": "suba-hueco",
       "damageType": "POTHOLE",
       "locality": "Suba",
-      "point": [4.7406, -74.0846],
+      "point": [
+        4.740512,
+        -74.083634
+      ],
       "target": "FILED",
       "overdue": true,
       "reporter": 1,
-      "endorsers": [0, 2, 6],
-      "timeline": { "opened": 30, "filed": 28 },
+      "endorsers": [
+        0,
+        2,
+        6
+      ],
+      "timeline": {
+        "opened": 30,
+        "filed": 28
+      },
       "context": "Hueco grande frente al paradero, los carros frenan de golpe para no caer. Ya lo reporté por la línea 195 y nada.",
       "edit": {
         "before": "a large pothole with exposed gravel next to the bus stop curb, cracked asphalt around it"
+      },
+      "base": {
+        "mapillaryId": "442566720801593",
+        "creator": "kaart_4",
+        "capturedAt": 1634317439794
       }
     },
     {
       "key": "engativa-hueco",
       "damageType": "POTHOLE",
       "locality": "Engativá",
-      "point": [4.6985, -74.1093],
+      "point": [
+        4.698809,
+        -74.109897
+      ],
       "target": "REPAIR_CLAIMED",
       "reporter": 2,
-      "endorsers": [3, 7],
-      "timeline": { "opened": 21, "filed": 20, "response": 2 },
+      "endorsers": [
+        3,
+        7
+      ],
+      "timeline": {
+        "opened": 21,
+        "filed": 20,
+        "response": 2
+      },
       "context": "Hay varios huecos seguidos en esta cuadra, el más grande está en la mitad del carril. De noche es peligroso porque no hay buena luz.",
       "agencyResponse": "Le informamos que la Unidad de Mantenimiento Vial ejecutó trabajos de parcheo en el tramo indicado dentro del plan de choque de la localidad de Engativá. El daño reportado fue reparado.",
       "edit": {
         "before": "two medium potholes in the middle of the lane, the larger one with broken asphalt chunks and standing water"
+      },
+      "base": {
+        "mapillaryId": "1302485153546084",
+        "creator": "kaart5",
+        "capturedAt": 1634244298290
       }
     },
     {
       "key": "chapinero-tapa",
       "damageType": "OPEN_MANHOLE",
       "locality": "Chapinero",
-      "point": [4.6447, -74.0636],
+      "point": [
+        4.645022,
+        -74.062837
+      ],
       "target": "AGENCY_RESPONDED",
       "reporter": 3,
-      "endorsers": [0, 1, 4, 5, 6],
-      "timeline": { "opened": 19, "filed": 18, "response": 6 },
+      "endorsers": [
+        0,
+        1,
+        4,
+        5,
+        6
+      ],
+      "timeline": {
+        "opened": 19,
+        "filed": 18,
+        "response": 6
+      },
       "context": "Alcantarilla destapada en el andén, alguien le puso una rama encima para avisar. Pasa mucha gente a pie y es muy fácil caerse. La tapa decía EAAB.",
       "agencyResponse": "Su solicitud ha sido recibida y trasladada a la dependencia competente de la Empresa de Acueducto y Alcantarillado de Bogotá, la cual la incluirá en la programación de visitas técnicas de acuerdo con la disponibilidad de recursos. Agradecemos su comunicación.",
       "edit": {
         "before": "an open sewer manhole on the sidewalk with its round cast-iron lid missing, a dark hole with a tree branch placed in it as a warning"
+      },
+      "base": {
+        "mapillaryId": "1558017691214657",
+        "creator": "kaart_4",
+        "capturedAt": 1634419468791
       }
     },
     {
       "key": "bosa-tapa",
       "damageType": "OPEN_MANHOLE",
       "locality": "Bosa",
-      "point": [4.6163, -74.1905],
+      "point": [
+        4.616127,
+        -74.190711
+      ],
       "target": "REPORTED",
       "reporter": 4,
-      "endorsers": [7],
-      "timeline": { "opened": 2 },
+      "endorsers": [
+        7
+      ],
+      "timeline": {
+        "opened": 2
+      },
       "context": "Se robaron la tapa de la alcantarilla en plena calle, los carros pasan por el lado. Urgente antes de que alguien caiga.",
       "edit": {
         "before": "an uncovered manhole in the street with no lid, a dark deep opening at the edge of the lane"
+      },
+      "base": {
+        "mapillaryId": "1277116856860661",
+        "creator": "MiguelForero",
+        "capturedAt": 1755875096990
       }
     },
     {
       "key": "usaquen-poste",
       "damageType": "DAMAGED_POLE",
       "locality": "Usaquén",
-      "point": [4.7215, -74.0461],
+      "point": [
+        4.721126,
+        -74.045158
+      ],
       "target": "FILED",
       "reporter": 5,
-      "endorsers": [2, 3],
-      "timeline": { "opened": 9, "filed": 6 },
+      "endorsers": [
+        2,
+        3
+      ],
+      "timeline": {
+        "opened": 9,
+        "filed": 6
+      },
       "context": "El poste de la luz está inclinado y tiene la base partida, los cables quedaron muy bajitos. Es de Enel según la placa.",
       "edit": {
         "before": "a concrete utility pole leaning noticeably with a cracked broken base and exposed rebar, power cables sagging low"
+      },
+      "base": {
+        "mapillaryId": "5440091829365777",
+        "creator": "kaartcam",
+        "capturedAt": 1505933115000
       }
     },
     {
       "key": "teusaquillo-arbol",
       "damageType": "RISKY_TREE",
       "locality": "Teusaquillo",
-      "point": [4.6331, -74.0745],
+      "point": [
+        4.633934,
+        -74.07556
+      ],
       "target": "AGENCY_RESPONDED",
       "reporter": 6,
-      "endorsers": [0, 4],
-      "timeline": { "opened": 25, "filed": 24, "response": 3 },
+      "endorsers": [
+        0,
+        4
+      ],
+      "timeline": {
+        "opened": 25,
+        "filed": 24,
+        "response": 3
+      },
       "context": "Árbol grande muy inclinado sobre la calle, con raíces levantando el andén. Con el viento de estos días da miedo pasar por debajo.",
       "agencyResponse": "La Secretaría Distrital de Ambiente informa que su solicitud fue registrada y se encuentra en turno para evaluación técnica del arbolado por parte del equipo forestal. Una vez se realice la visita, se definirá el tratamiento silvicultural correspondiente.",
       "edit": {
         "before": "a large tree leaning strongly over the street, its roots lifting and cracking the sidewalk slabs around the trunk"
+      },
+      "base": {
+        "mapillaryId": "1238075476702344",
+        "creator": "kaart_4",
+        "capturedAt": 1634488070293
       }
     },
     {
-      "key": "ciudad-bolivar-luminaria",
-      "damageType": "STREETLIGHT_OUT",
+      "key": "ciudad-bolivar-basuras",
+      "damageType": "GARBAGE_DUMP",
       "locality": "Ciudad Bolívar",
-      "point": [4.5728, -74.1564],
-      "target": "REPORTED",
-      "reporter": 7,
-      "endorsers": [1, 5, 6],
-      "timeline": { "opened": 5 },
-      "context": "La luminaria de esta esquina lleva semanas apagada y la cuadra queda totalmente oscura de noche. Ya han robado a varios vecinos aquí.",
-      "edit": {
-        "before": "a street light on a pole with its lamp housing broken and hanging, the glass cover shattered, clearly not working"
+      "point": [
+        4.573917,
+        -74.156439
+      ],
+      "target": "REPAIR_CLAIMED",
+      "reporter": 6,
+      "endorsers": [
+        0,
+        1,
+        7
+      ],
+      "timeline": {
+        "opened": 17,
+        "filed": 16,
+        "response": 1
+      },
+      "context": "Están botando escombros y bolsas de basura en esta esquina todos los fines de semana, ya ocupa medio andén y la escalera.",
+      "agencyResponse": "Se informa que el prestador del servicio de aseo realizó la recolección de los residuos y escombros en el punto señalado durante la jornada de limpieza de la localidad de Ciudad Bolívar. El punto crítico fue atendido.",
+      "edit": null,
+      "base": {
+        "mapillaryId": "1047501299366287",
+        "creator": "kaart5",
+        "capturedAt": 1634662486291
       }
     },
     {
       "key": "fontibon-fuga",
       "damageType": "WATER_LEAK",
       "locality": "Fontibón",
-      "point": [4.6741, -74.1430],
+      "point": [
+        4.675036,
+        -74.141941
+      ],
       "target": "VERIFIED",
       "reporter": 0,
-      "endorsers": [2, 7],
+      "endorsers": [
+        2,
+        7
+      ],
       "verifier": 3,
-      "timeline": { "opened": 33, "filed": 32, "response": 15, "verified": 11 },
+      "timeline": {
+        "opened": 33,
+        "filed": 32,
+        "response": 15,
+        "verified": 11
+      },
       "context": "Sale agua limpia del pavimento todo el día, se está formando un charco que ya llega al andén. Se pierde muchísima agua.",
       "agencyResponse": "La Empresa de Acueducto y Alcantarillado de Bogotá informa que el pasado martes se atendió el daño en la red de acueducto reportado en la dirección indicada. Se reparó la tubería y se restableció la superficie del pavimento.",
       "edit": {
         "before": "clean water gushing up from a crack in the asphalt, forming a large puddle that runs along the curb",
         "after": "the same spot dry, with a fresh rectangular asphalt patch where the pipe was repaired, no water"
+      },
+      "base": {
+        "mapillaryId": "1131241230744846",
+        "creator": "kaart5",
+        "capturedAt": 1634481834295
       }
     },
     {
       "key": "puente-aranda-sumidero",
       "damageType": "BLOCKED_DRAIN",
       "locality": "Puente Aranda",
-      "point": [4.6214, -74.1146],
+      "point": [
+        4.622149,
+        -74.113413
+      ],
       "target": "NEEDS_MORE_EVIDENCE",
       "reporter": 1,
-      "endorsers": [4],
+      "endorsers": [
+        4
+      ],
       "verifier": 6,
-      "timeline": { "opened": 28, "filed": 27, "response": 9, "verified": 5 },
+      "timeline": {
+        "opened": 28,
+        "filed": 27,
+        "response": 9,
+        "verified": 5
+      },
       "context": "El sumidero de la esquina está tapado de basura y barro. Cada vez que llueve se inunda toda la cuadra y el agua se mete a los locales.",
       "agencyResponse": "Se informa que la cuadrilla de mantenimiento de redes realizó la limpieza del sumidero ubicado en la dirección indicada, retirando sedimentos y residuos sólidos. El sumidero quedó en funcionamiento.",
       "edit": {
         "before": "a street storm drain grate at the curb completely clogged with mud, plastic bags and trash, with dirty water pooled around it"
       },
-      "after": "elsewhere"
+      "after": "elsewhere",
+      "base": {
+        "mapillaryId": "1301310996988304",
+        "creator": "taylorsmock",
+        "capturedAt": 1634396676291
+      },
+      "afterPhoto": "1074867706660094"
     },
     {
       "key": "martires-basuras",
       "damageType": "GARBAGE_DUMP",
       "locality": "Los Mártires",
-      "point": [4.6058, -74.0893],
+      "point": [
+        4.605498,
+        -74.090488
+      ],
       "target": "VERIFIED",
       "reporter": 2,
-      "endorsers": [0, 3, 5, 6, 7],
+      "endorsers": [
+        0,
+        3,
+        5,
+        6,
+        7
+      ],
       "verifier": 4,
-      "timeline": { "opened": 14, "filed": 13, "response": 6, "verified": 4 },
+      "timeline": {
+        "opened": 14,
+        "filed": 13,
+        "response": 6,
+        "verified": 4
+      },
       "context": "Botadero de basura en la esquina, ya hay colchones, escombros y bolsas. Huele horrible y salen ratas.",
       "agencyResponse": "La Unidad Administrativa Especial de Servicios Públicos informa que el operador de aseo de la zona realizó la recolección de los residuos y escombros acumulados en el punto reportado. El punto quedó limpio y será incluido en las rutas de control.",
       "edit": {
         "before": "an illegal garbage dump on the corner: a pile of black trash bags, an old mattress and construction rubble against the wall",
         "after": "the same corner clean, the trash bags, mattress and rubble removed, only the bare sidewalk and wall"
+      },
+      "base": {
+        "mapillaryId": "297655328491495",
+        "creator": "kaartcam",
+        "capturedAt": 1506007484000
       }
     },
     {
       "key": "barrios-unidos-anden",
       "damageType": "DAMAGED_SIDEWALK",
       "locality": "Barrios Unidos",
-      "point": [4.6662, -74.0732],
+      "point": [
+        4.666634,
+        -74.072001
+      ],
       "target": "REOPENED",
       "reporter": 3,
-      "endorsers": [1, 6],
+      "endorsers": [
+        1,
+        6
+      ],
       "verifier": 7,
-      "timeline": { "opened": 37, "filed": 36, "response": 12, "verified": 7 },
+      "timeline": {
+        "opened": 37,
+        "filed": 36,
+        "response": 12,
+        "verified": 7
+      },
       "context": "El andén está levantado y con huecos, una señora mayor se cayó la semana pasada. Por aquí pasan muchos niños del colegio.",
       "agencyResponse": "La Alcaldía Local de Barrios Unidos informa que el andén reportado fue intervenido por el contratista de mantenimiento de espacio público y se encuentra en buen estado.",
       "edit": {
         "before": "a broken sidewalk with lifted and cracked concrete slabs and a hole where slabs are missing",
         "after": "the same broken sidewalk seen from a slightly different angle, still with lifted cracked slabs and the hole, nothing repaired"
+      },
+      "base": {
+        "mapillaryId": "212931130641837",
+        "creator": "angoca",
+        "capturedAt": 1559485365500
       }
     },
     {
       "key": "santa-fe-mobiliario",
       "damageType": "DAMAGED_STREET_FURNITURE",
       "locality": "Santa Fe",
-      "point": [4.6047, -74.0692],
+      "point": [
+        4.60516,
+        -74.068289
+      ],
       "target": "FILED",
       "reporter": 4,
-      "endorsers": [2],
-      "timeline": { "opened": 11, "filed": 10 },
+      "endorsers": [
+        2
+      ],
+      "timeline": {
+        "opened": 11,
+        "filed": 10
+      },
       "context": "La banca del parque está partida y tiene tornillos salidos, un niño se cortó la pierna. También la caneca está arrancada.",
       "edit": {
         "before": "a public bench broken in half with protruding metal bolts and a trash bin torn off its post lying next to it"
+      },
+      "base": {
+        "mapillaryId": "128949889540046",
+        "creator": "kaart_4",
+        "capturedAt": 1634501550795
       }
     },
     {
       "key": "rafael-uribe-hueco",
       "damageType": "POTHOLE",
       "locality": "Rafael Uribe Uribe",
-      "point": [4.5749, -74.1171],
+      "point": [
+        4.576161,
+        -74.118776
+      ],
       "target": "REPORTED",
       "reporter": 5,
       "endorsers": [],
-      "timeline": { "opened": 1 },
+      "timeline": {
+        "opened": 1
+      },
       "context": "Hueco nuevo después de los aguaceros de esta semana, ya está creciendo. Está justo en la curva.",
       "edit": {
         "before": "a fresh pothole at a curve of the road with crumbling asphalt edges and loose gravel"
+      },
+      "base": {
+        "mapillaryId": "1343945876030424",
+        "creator": "kaart_2",
+        "capturedAt": 1643721395299
       }
     },
     {
-      "key": "san-cristobal-basuras",
-      "damageType": "GARBAGE_DUMP",
+      "key": "san-cristobal-luminaria",
+      "damageType": "STREETLIGHT_OUT",
       "locality": "San Cristóbal",
-      "point": [4.5727, -74.0886],
-      "target": "REPAIR_CLAIMED",
-      "reporter": 6,
-      "endorsers": [0, 1, 7],
-      "timeline": { "opened": 17, "filed": 16, "response": 1 },
-      "context": "Están botando escombros y basura en el lote de la esquina todos los fines de semana, ya ocupa medio andén.",
-      "agencyResponse": "Se informa que el prestador del servicio de aseo realizó la recolección de los residuos y escombros en el punto señalado durante la jornada de limpieza de la localidad de San Cristóbal. El punto crítico fue atendido.",
+      "point": [
+        4.571448,
+        -74.090157
+      ],
+      "target": "REPORTED",
+      "reporter": 7,
+      "endorsers": [
+        1,
+        5,
+        6
+      ],
+      "timeline": {
+        "opened": 5
+      },
+      "context": "La luminaria de esta esquina lleva semanas apagada y la cuadra queda totalmente oscura de noche. Ya han robado a varios vecinos aquí.",
       "edit": {
-        "before": "a pile of construction rubble, trash bags and old furniture dumped on the sidewalk next to an empty lot, covering half the sidewalk"
+        "before": "a street light on a pole with its lamp housing broken and hanging, the glass cover shattered, clearly not working"
+      },
+      "base": {
+        "mapillaryId": "1041336806656493",
+        "creator": "kaart_4",
+        "capturedAt": 1634569165796
       }
     }
   ]

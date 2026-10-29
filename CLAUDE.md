@@ -250,7 +250,7 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 - [x] SAM 3.1 y Muse Spark disponibles en la Meta Model API (probado el 2026-10-26, ver `docs/meta-api.md`).
 - [x] Muse Spark acepta audio directamente.
 - [ ] Número de prueba de WhatsApp Cloud API y plantillas de `docs/whatsapp-templates.md` enviadas a aprobación.
-- [ ] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt `verify-repair.v1` con fotos reales de antes y después.
+- [x] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt `verify-repair.v1` (2026-10-28, con los daños de ejemplo; resultados en `docs/meta-api.md`). Pendiente: frases de SAM para fugas y andenes, y `RepairCheck` con área 0.
 - [x] VPS: red `deploy_personal-network`, ~3,2 GB de RAM disponibles, sin swap.
 - [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
 - [x] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
