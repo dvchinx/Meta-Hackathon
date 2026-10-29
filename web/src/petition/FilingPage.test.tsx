@@ -30,6 +30,7 @@ const issue: IssueSummary = {
   locality: 'Chapinero',
   officialChannel: { url: 'https://bogota.gov.co/yo-participo/reporta-sdqs/huecos', phone: 'Línea 195' },
   petition: null,
+  example: null,
 }
 
 const profile: FilerProfile = {

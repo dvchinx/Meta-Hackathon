@@ -52,6 +52,13 @@ export interface IssueSummary {
   locality: string | null
   officialChannel: OfficialChannel | null
   petition: PetitionStatus | null
+  /** Set on the demo examples (AI-edited photos), null on real reports. */
+  example: ExampleNote | null
+}
+
+/** Marks a demo example. credit: attribution of the base street photo. */
+export interface ExampleNote {
+  credit: string | null
 }
 
 export type VerificationOutcome = 'REPAIRED' | 'NOT_REPAIRED' | 'INCONCLUSIVE'

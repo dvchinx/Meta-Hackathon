@@ -798,6 +798,22 @@ img {
   color: var(--text-muted);
 }
 
+.badge-example {
+  margin-left: 8px;
+  padding: 0 8px;
+  background: var(--info-soft);
+  color: var(--info);
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+.example-credit {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-subtle);
+  font-size: 0.8125rem;
+}
+
 .review-actions {
   display: flex;
   flex-wrap: wrap;

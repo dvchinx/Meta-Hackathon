@@ -122,6 +122,7 @@ export function IssueDetailPage({ issueId }: { issueId: string | null }) {
               <span className="dot" style={{ background: STATUS_COLORS[issue.status] }} />
               {STATUS_LABELS[issue.status]}
               <span className="muted"> · {reportsLabel(issue.reportCount)}</span>
+              {issue.example && <span className="badge badge-example">Ejemplo</span>}
             </p>
           </div>
         </div>
@@ -145,6 +146,14 @@ export function IssueDetailPage({ issueId }: { issueId: string | null }) {
               </figure>
             )}
           </section>
+
+          {issue.example && (
+            <Notice>
+              <strong>Daño de ejemplo para la demostración.</strong> Sus fotos se editaron con IA sobre una foto real de
+              la calle y su historial está simulado; los reportes ciudadanos no llevan esta etiqueta.
+              {issue.example.credit && <span className="example-credit">{issue.example.credit}</span>}
+            </Notice>
+          )}
 
           {awaitingPhoto && <VerifyPanel issue={issue} onVerified={() => load()} />}
 

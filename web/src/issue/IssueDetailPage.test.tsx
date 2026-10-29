@@ -24,6 +24,7 @@ const claimed: IssueSummary = {
   locality: 'Chapinero',
   officialChannel: null,
   petition: { radicado: 'SIM-2026-000007', filedAt: '2026-10-21T12:00:00Z', dueDate: '2026-11-12', businessDaysLeft: 0, overdue: false },
+  example: null,
 }
 
 const history: IssueHistory = {
@@ -54,6 +55,17 @@ describe('IssueDetailPage', () => {
     expect(screen.getByText('La entidad dice que tapó el hueco.')).toBeTruthy()
     expect(screen.getByText('Dice que lo reparó')).toBeTruthy()
     expect(screen.getByText('Unidad de Mantenimiento Vial dice que lo reparó')).toBeTruthy()
+    expect(screen.queryByText('Ejemplo')).toBeNull()
+  })
+
+  it('labels demo examples and credits the base photo', async () => {
+    api.fetchIssue.mockResolvedValue({ ...claimed, example: { credit: 'Foto base: ana / Mapillary (CC BY-SA 4.0)' } })
+    api.fetchIssueHistory.mockResolvedValue(history)
+    render(<IssueDetailPage issueId="i1" />)
+
+    expect(await screen.findByText('Ejemplo')).toBeTruthy()
+    expect(screen.getByText('Daño de ejemplo para la demostración.')).toBeTruthy()
+    expect(screen.getByText('Foto base: ana / Mapillary (CC BY-SA 4.0)')).toBeTruthy()
   })
 
   it('sends the photo and reloads the damage with its new status', async () => {

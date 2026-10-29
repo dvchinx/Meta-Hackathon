@@ -16,6 +16,7 @@ function issue(overrides: Partial<IssueSummary>): IssueSummary {
     locality: 'Chapinero',
     officialChannel: null,
     petition: null,
+    example: null,
     ...overrides,
   }
 }

@@ -4,7 +4,7 @@ Citizens of Bogotá report urban damage (potholes, open manholes, damaged poles,
 
 Built for the Meta Global AI Developer Hackathon.
 
-- Live: <https://civic.jesusflorez.cloud> (soon)
+- Live: <https://civic.jesusflorez.cloud>
 - Project guide and architecture: [CLAUDE.md](CLAUDE.md)
 - Meta Model API notes: [docs/meta-api.md](docs/meta-api.md)
 
@@ -16,6 +16,10 @@ docker compose -f infra/docker-compose.yml --env-file .env up -d   # PostgreSQL 
 ```
 
 Module commands are listed in [CLAUDE.md](CLAUDE.md#comandos).
+
+## Demo examples
+
+The live map includes about 15 example damages labeled **"Ejemplo"**: real street photos from Mapillary (CC BY-SA 4.0) with the damage added by AI, run through the real pipeline (Muse Spark, SAM 3.1, routing, simulated petition, agency reply and before/after check). Citizen reports never carry that label, and one script removes the examples. See [infra/seed/README.md](infra/seed/README.md).
 
 ## Evaluation
 

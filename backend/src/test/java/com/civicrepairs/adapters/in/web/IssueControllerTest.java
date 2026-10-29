@@ -1,5 +1,6 @@
 package com.civicrepairs.adapters.in.web;
 
+import com.civicrepairs.application.port.in.ExampleNote;
 import com.civicrepairs.application.port.in.FiledPetition;
 import com.civicrepairs.application.port.in.ListPublicIssuesUseCase;
 import com.civicrepairs.application.port.in.OfficialChannel;
@@ -55,7 +56,7 @@ class IssueControllerTest {
 				LocalDate.of(2026, 11, 19));
 		var issue = new PublicIssue(ID, DamageType.POTHOLE, IssueStatus.FILED, 4.67, -74.05, 3,
 				Instant.parse("2026-10-20T12:00:00Z"), "Unidad de Mantenimiento Vial", COVER, "Chapinero",
-				new OfficialChannel("https://bogota.gov.co/yo-participo/reporta-sdqs/huecos", "Línea 195"), petition);
+				new OfficialChannel("https://bogota.gov.co/yo-participo/reporta-sdqs/huecos", "Línea 195"), petition, null);
 
 		mvc(issue).perform(get("/api/issues"))
 				.andExpect(status().isOk())
@@ -79,19 +80,31 @@ class IssueControllerTest {
 	@Test
 	void issuesWithoutPhotoAgencyOrPetitionStillRender() throws Exception {
 		var issue = new PublicIssue(ID, DamageType.OTHER, IssueStatus.REPORTED, 4.6, -74.08, 1,
-				Instant.parse("2026-10-20T12:00:00Z"), null, null, null, null, null);
+				Instant.parse("2026-10-20T12:00:00Z"), null, null, null, null, null, null);
 
 		mvc(issue).perform(get("/api/issues"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].photoUrl").value(nullValue()))
 				.andExpect(jsonPath("$[0].agency").value(nullValue()))
-				.andExpect(jsonPath("$[0].petition").value(nullValue()));
+				.andExpect(jsonPath("$[0].petition").value(nullValue()))
+				.andExpect(jsonPath("$[0].example").value(nullValue()));
+	}
+
+	@Test
+	void labelsDemoExamples() throws Exception {
+		var issue = new PublicIssue(ID, DamageType.POTHOLE, IssueStatus.REPORTED, 4.6, -74.08, 1,
+				Instant.parse("2026-10-20T12:00:00Z"), null, null, null, null, null,
+				new ExampleNote("Foto base: Mapillary (CC BY-SA 4.0)"));
+
+		mvc(issue).perform(get("/api/issues/" + ID))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.example.credit").value("Foto base: Mapillary (CC BY-SA 4.0)"));
 	}
 
 	@Test
 	void servesOneIssue() throws Exception {
 		var issue = new PublicIssue(ID, DamageType.POTHOLE, IssueStatus.REPORTED, 4.6, -74.08, 1,
-				Instant.parse("2026-10-20T12:00:00Z"), null, null, null, null, null);
+				Instant.parse("2026-10-20T12:00:00Z"), null, null, null, null, null, null);
 
 		mvc(issue).perform(get("/api/issues/" + ID)).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(ID.toString()));
 		mvc(issue).perform(get("/api/issues/" + UUID.randomUUID())).andExpect(status().isNotFound());

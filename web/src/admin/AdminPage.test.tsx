@@ -20,6 +20,7 @@ const filed: IssueSummary = {
   locality: 'Chapinero',
   officialChannel: null,
   petition: { radicado: 'SIM-2026-000003', filedAt: '2026-10-21T12:00:00Z', dueDate: '2026-11-12', businessDaysLeft: 6, overdue: false },
+  example: null,
 }
 
 beforeEach(() => sessionStorage.clear())

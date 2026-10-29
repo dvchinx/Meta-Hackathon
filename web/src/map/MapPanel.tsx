@@ -236,6 +236,7 @@ function IssueList({ issues, onSelect }: { issues: IssueSummary[]; onSelect: (is
               <span className="issue-row-title">
                 {DAMAGE_LABELS[issue.damageType]}
                 {issue.locality && <span className="muted"> · {issue.locality}</span>}
+                {issue.example && <span className="badge badge-example">Ejemplo</span>}
               </span>
               <span className="issue-row-meta">
                 {STATUS_LABELS[issue.status]} · {reportsLabel(issue.reportCount)} · {timeOpen(issue.openedAt)}

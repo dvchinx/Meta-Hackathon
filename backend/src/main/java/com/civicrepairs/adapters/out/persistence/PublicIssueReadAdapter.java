@@ -1,5 +1,6 @@
 package com.civicrepairs.adapters.out.persistence;
 
+import com.civicrepairs.application.port.in.ExampleNote;
 import com.civicrepairs.application.port.in.PublicIssue;
 import com.civicrepairs.application.port.out.PublicIssueReadPort;
 import com.civicrepairs.domain.issue.IssueStatus;
@@ -17,7 +18,7 @@ import java.util.UUID;
 class PublicIssueReadAdapter implements PublicIssueReadPort {
 
 	private static final String SELECT = "SELECT i.id, i.damage_type, i.status, i.latitude, i.longitude, "
-			+ "i.report_count, i.opened_at, i.cover_media_id, " + IssueReadJoins.COLUMNS
+			+ "i.report_count, i.opened_at, i.cover_media_id, i.seed_batch, i.seed_credit, " + IssueReadJoins.COLUMNS
 			+ " FROM issue i " + IssueReadJoins.JOINS;
 
 	private final JdbcClient jdbc;
@@ -49,6 +50,7 @@ class PublicIssueReadAdapter implements PublicIssueReadPort {
 				rs.getObject("cover_media_id", UUID.class),
 				rs.getString("locality_name"),
 				IssueReadJoins.channel(rs),
-				IssueReadJoins.petition(rs));
+				IssueReadJoins.petition(rs),
+				rs.getString("seed_batch") == null ? null : new ExampleNote(rs.getString("seed_credit")));
 	}
 }

@@ -5,6 +5,7 @@ import com.civicrepairs.application.port.in.AccountException.Code;
 import com.civicrepairs.application.port.in.AuthenticatedUser;
 import com.civicrepairs.application.port.in.EndorseIssueUseCase;
 import com.civicrepairs.application.port.in.EndorseIssueUseCase.EndorsementResult;
+import com.civicrepairs.application.port.in.ExampleNote;
 import com.civicrepairs.application.port.in.FilePetitionUseCase;
 import com.civicrepairs.application.port.in.FilePetitionUseCase.PetitionReceipt;
 import com.civicrepairs.application.port.in.FollowIssueUseCase;
@@ -171,13 +172,14 @@ class IssueController {
 
 	record IssueResponse(UUID id, String damageType, String status, double latitude, double longitude,
 			int reportCount, Instant openedAt, String agency, String photoUrl, String locality,
-			OfficialChannel officialChannel, PetitionStatusResponse petition) {
+			OfficialChannel officialChannel, PetitionStatusResponse petition, ExampleNote example) {
 
 		static IssueResponse from(PublicIssue issue, Clock clock) {
 			return new IssueResponse(issue.id(), issue.damageType().name(), issue.status().name(), issue.latitude(),
 					issue.longitude(), issue.reportCount(), issue.openedAt(), issue.agencyName(),
 					issue.coverMediaId() == null ? null : PublicMediaUrls.of(issue.coverMediaId()),
-					issue.localityName(), issue.channel(), PetitionStatusResponse.from(issue.petition(), clock));
+					issue.localityName(), issue.channel(), PetitionStatusResponse.from(issue.petition(), clock),
+					issue.example());
 		}
 	}
 }

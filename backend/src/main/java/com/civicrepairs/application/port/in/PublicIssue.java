@@ -12,6 +12,7 @@ import java.util.UUID;
  * @param localityName null for Issues outside the locality boundaries (only possible for data older than them)
  * @param channel      null when no official channel is known for the damage type
  * @param petition     latest petition, null until one is filed
+ * @param example      null for real Issues; set on the demo examples loaded by infra/seed
  */
 public record PublicIssue(
 		UUID id,
@@ -25,5 +26,6 @@ public record PublicIssue(
 		UUID coverMediaId,
 		String localityName,
 		OfficialChannel channel,
-		FiledPetition petition) {
+		FiledPetition petition,
+		ExampleNote example) {
 }

@@ -38,3 +38,7 @@ eval/.cache/
 
 # Logs
 *.log
+
+# Demo seed: Mapillary candidates, run state and the production export (infra/seed/README.md)
+infra/seed/work/
+infra/seed/out/

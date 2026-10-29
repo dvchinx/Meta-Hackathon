@@ -27,7 +27,7 @@ Proyecto para el Meta Global AI Developer Hackathon (10 días). Priorizar un flu
 backend/         Spring Boot 4.1 (Java 21), arquitectura hexagonal
 vision-service/  Python + FastAPI, solo CPU: cliente de SAM 3.1 (Meta API), difuminado, área, comparación antes/después
 web/             React + TypeScript + Vite + MapLibre (mapas de OpenStreetMap)
-infra/           docker-compose de desarrollo (PostGIS) y de producción
+infra/           docker-compose de desarrollo (PostGIS) y de producción; seed/: daños de ejemplo para la demo
 eval/            Conjunto de evaluación (fotos etiquetadas) y scripts de métricas
 docs/            Arquitectura, decisiones, guion de la demo, notas de la Meta API (docs/meta-api.md)
 .github/workflows/  CI y despliegue
@@ -102,7 +102,7 @@ Estado auxiliar: NEEDS_MORE_EVIDENCE (la verificación no fue concluyente)
 
 - Las transiciones permitidas están en `domain` y se prueban con tests unitarios.
 - `VERIFIED` y `REOPENED` solo se alcanzan con evidencia fotográfica procesada por `VerifyRepairUseCase`.
-- Toda transición crea un `StatusTransition`. Nada se borra.
+- Toda transición crea un `StatusTransition`. Nada se borra. Única excepción: los Issues de ejemplo (`issue.seed_batch`, migración V10), que la web marca como "Ejemplo" e `infra/seed/purge.sql` borra por lote. Cómo se generan: `infra/seed/README.md`.
 
 ## Pipeline de IA
 
@@ -253,5 +253,6 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 - [ ] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt `verify-repair.v1` con fotos reales de antes y después.
 - [x] VPS: red `deploy_personal-network`, ~3,2 GB de RAM disponibles, sin swap.
 - [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
-- [ ] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
-- [ ] Primer despliegue: crear `/opt/civic-repairs/.env` en el VPS y los secretos `VPS_*` en GitHub.
+- [x] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
+- [x] Primer despliegue: crear `/opt/civic-repairs/.env` en el VPS y los secretos `VPS_*` en GitHub.
+- [ ] Cargar en producción los daños de ejemplo (`infra/seed/`).

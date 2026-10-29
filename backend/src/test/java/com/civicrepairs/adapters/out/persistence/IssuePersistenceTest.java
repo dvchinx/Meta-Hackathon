@@ -199,9 +199,22 @@ class IssuePersistenceTest {
 			assertThat(p.channel().url()).isEqualTo("https://bogota.gov.co/yo-participo/reporta-sdqs/huecos");
 			assertThat(p.petition()).isNull();
 			assertThat(p.latitude()).isEqualTo(PARQUE_93.latitude());
+			assertThat(p.example()).isNull();
 		});
 		assertThat(publicIssues.findPublic(issue.id())).isPresent();
 		assertThat(publicIssues.findPublic(UUID.randomUUID())).isEmpty();
+	}
+
+	@Test
+	void seededIssuesAreLabeledAsExamples() {
+		var issue = pothole(PARQUE_93);
+		issues.save(issue);
+		jdbc.sql("UPDATE issue SET seed_batch = 'demo', seed_credit = 'Foto base: Mapillary' WHERE id = :id")
+				.param("id", issue.id())
+				.update();
+
+		assertThat(publicIssues.findPublic(issue.id())).get()
+				.satisfies(p -> assertThat(p.example().credit()).isEqualTo("Foto base: Mapillary"));
 	}
 
 	@Test
