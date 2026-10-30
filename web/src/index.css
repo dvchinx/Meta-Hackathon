@@ -1452,6 +1452,150 @@ a.issue-popup-action {
   max-width: 1080px;
 }
 
+/* ---------- Agencies (accountability) ---------- */
+
+.agency-totals {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.agency-total {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+}
+
+.agency-total-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.agency-total-label {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.is-good {
+  color: var(--success);
+}
+
+.agency-examples {
+  margin-top: 12px;
+  font-size: 0.875rem;
+}
+
+.agency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.agency-card {
+  padding: 20px 24px;
+}
+
+.agency-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.agency-card-header h2 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.agency-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.agency-stats dt {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.agency-stats dd {
+  margin-top: 2px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.agency-stats dd .muted {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.claim-check {
+  margin-top: 16px;
+}
+
+.claim-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+
+.claim-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  list-style: none;
+}
+
+.claim-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.claim-confirmed {
+  background: #16a34a;
+}
+
+.claim-refuted {
+  background: #7a1414;
+}
+
+.claim-pending {
+  background: #7a5af8;
+}
+
+.agency-card-note {
+  margin-top: 12px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 900px) {
+  .agency-totals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .agency-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ---------- Map panel: filters, list, summary ---------- */
 
 .filters {

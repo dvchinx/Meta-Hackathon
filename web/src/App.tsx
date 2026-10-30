@@ -30,6 +30,7 @@ const ReportForm = lazy(() => import('./report/ReportForm').then((m) => ({ defau
 const IssueDetailPage = lazy(() => import('./issue/IssueDetailPage').then((m) => ({ default: m.IssueDetailPage })))
 const PetitionPage = lazy(() => import('./petition/PetitionPage').then((m) => ({ default: m.PetitionPage })))
 const AdminPage = lazy(() => import('./admin/AdminPage').then((m) => ({ default: m.AdminPage })))
+const AgenciesPage = lazy(() => import('./agencies/AgenciesPage').then((m) => ({ default: m.AgenciesPage })))
 
 const loading = (
   <div className="page">
@@ -160,6 +161,9 @@ function App() {
         </RequireAccount>
       )
       break
+    case '/entidades':
+      page = <AgenciesPage />
+      break
     case '/privacidad':
       page = <PrivacyPolicyPage />
       break
@@ -184,6 +188,15 @@ function App() {
           <a className="button button-ghost" href="#/" aria-label="Mapa" aria-current={onMap ? 'page' : undefined}>
             <Icon name="map" size={18} />
             <span className="nav-label">Mapa</span>
+          </a>
+          <a
+            className="button button-ghost"
+            href={href('/entidades')}
+            aria-label="Entidades"
+            aria-current={route.path === '/entidades' ? 'page' : undefined}
+          >
+            <Icon name="list" size={18} />
+            <span className="nav-label">Entidades</span>
           </a>
           <UserMenu currentPath={route.path} />
           <a
