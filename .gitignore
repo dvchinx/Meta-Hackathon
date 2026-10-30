@@ -26,9 +26,10 @@ __pycache__/
 # Local media storage
 data/
 
-# Eval outputs (labeled photos are versioned; generated results are not)
+# Eval outputs (labeled photos are versioned; generated results and candidate photos are not)
 eval/results/
 eval/.cache/
+eval/work/
 
 # IDE / OS
 .idea/

@@ -1,0 +1,787 @@
+{
+ "version": 1,
+ "photos": {
+  "pothole-1": {
+   "file": "photos/pothole-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Pothole_in_Villeray,_Montr%C3%A9al.jpg",
+   "author": "Miguel Tremblay",
+   "license": "Public domain"
+  },
+  "pothole-2": {
+   "file": "photos/pothole-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Pothole_Big.jpg",
+   "author": "Uncl3dad",
+   "license": "Public domain"
+  },
+  "pothole-3": {
+   "file": "photos/pothole-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:A_pothole_in_Dilova_Street_in_Kyiv.jpg",
+   "author": "Роман Рябенко",
+   "license": "CC0"
+  },
+  "pothole-4": {
+   "file": "photos/pothole-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Pothole_in_an_asphalt_pavement.jpg",
+   "author": "Frankie Fouganthin",
+   "license": "CC BY-SA 4.0"
+  },
+  "pothole-5": {
+   "file": "photos/pothole-5.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Pothole_in_Potomac_after_rain.jpg",
+   "author": "Ser Amantio di Nicolao",
+   "license": "CC BY-SA 4.0"
+  },
+  "pothole-6": {
+   "file": "photos/pothole-6.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:A_Pothole_Is_Decorated_-_Mid-City_New_Orleans.jpg",
+   "author": "Bart Everson",
+   "license": "CC BY 2.0"
+  },
+  "pothole-7": {
+   "file": "photos/pothole-7.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Bielsko-Bia%C5%82a,_ulica_Widok_-_uszkodzona_dziurawa_droga_02.jpg",
+   "author": "Kamil Czaiński",
+   "license": "CC BY-SA 4.0"
+  },
+  "pole-1": {
+   "file": "photos/pole-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:2014-12-30_13_37_40_Leaning_utility_pole_and_street_light_at_Maple_Avenue_and_Patton_Drive_in_Ewing,_New_Jersey.JPG",
+   "author": "Famartin",
+   "license": "CC BY-SA 4.0"
+  },
+  "pole-2": {
+   "file": "photos/pole-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Leaning_utility_pole_at_Lakeside_Shopping_Center,_Metairie,_Louisiana,_after_Hurricane_Katrina.jpg",
+   "author": "Department of Homeland Security. U.S. Coast Guard. 3/1/2003",
+   "license": "Public domain"
+  },
+  "pole-3": {
+   "file": "photos/pole-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Power_pole_leaning_over_Lakeland_Road_after_Hurricane_Irma,_Valdosta,_Georgia.jpg",
+   "author": "Michael Rivera",
+   "license": "CC BY-SA 4.0"
+  },
+  "pole-4": {
+   "file": "photos/pole-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:The_Leaning_Pole_Of_Ringshall_-_geograph.org.uk_-_2566555.jpg",
+   "author": "Keith Evans",
+   "license": "CC BY-SA 2.0"
+  },
+  "tree-1": {
+   "file": "photos/tree-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Fallen_tree,_16th_Street_NW.jpg",
+   "author": "Nvss132",
+   "license": "CC0"
+  },
+  "tree-2": {
+   "file": "photos/tree-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Moscow,_Donskaya_Street,_fallen_tree_June_2022_02.jpg",
+   "author": "Retired electrician",
+   "license": "CC0"
+  },
+  "tree-2b": {
+   "file": "photos/tree-2b.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Moscow,_Donskaya_Street,_fallen_tree_June_2022_01.jpg",
+   "author": "Retired electrician",
+   "license": "CC0"
+  },
+  "tree-3": {
+   "file": "photos/tree-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Moscow,_Donskaya_Street,_fallen_tree_June_2022_03.jpg",
+   "author": "Retired electrician",
+   "license": "CC0"
+  },
+  "tree-4": {
+   "file": "photos/tree-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Big_broken_branches_block_the_sidewalk_and_the_road_(50955960583).jpg",
+   "author": "Oregon Department of Transportation",
+   "license": "CC BY 2.0"
+  },
+  "light-1": {
+   "file": "photos/light-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Fire_damaged_lamp_on_Eastbourne_Pier_-_geograph.org.uk_-_4184146.jpg",
+   "author": "PAUL FARMER",
+   "license": "CC BY-SA 2.0"
+  },
+  "light-2": {
+   "file": "photos/light-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Marywood_Square_Lamp_Standard_In_Front_Of_No_55,_Glasgow,_Scotland_02.jpg",
+   "author": "Michal Klajban",
+   "license": "CC BY-SA 4.0"
+  },
+  "light-3": {
+   "file": "photos/light-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_lamp_post_in_Christiansfeld.jpg",
+   "author": "Leif Jørgensen",
+   "license": "CC BY-SA 4.0"
+  },
+  "light-4": {
+   "file": "photos/light-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Hurricane_Helene,_Valdosta,_damaged_lamp_post_and_fallen_bricks,_E_Hill_Ave.jpg",
+   "author": "Mjrmtg",
+   "license": "CC0"
+  },
+  "lamp-a": {
+   "file": "photos/lamp-a.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_public_street_light,_Feijenoord,_Rotterdam_(2021)_01.jpg",
+   "author": "Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons - © CC BY-SA 4.0 International.(Want to use this image?)Original publication 📤: --Donald Trung 『徵國單』 (No Fake News 💬) (WikiProject Numismatics 💴) (Articles 📚) 22:27, 12 November 2021 (UTC)",
+   "license": "CC BY-SA 4.0"
+  },
+  "lamp-b": {
+   "file": "photos/lamp-b.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_public_street_light,_Feijenoord,_Rotterdam_(2021)_02.jpg",
+   "author": "Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons - © CC BY-SA 4.0 International.(Want to use this image?)Original publication 📤: --Donald Trung 『徵國單』 (No Fake News 💬) (WikiProject Numismatics 💴) (Articles 📚) 22:27, 12 November 2021 (UTC)",
+   "license": "CC BY-SA 4.0"
+  },
+  "leak-1": {
+   "file": "photos/leak-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Burst_water_main_(geograph_2646387).jpg",
+   "author": "Richard Webb",
+   "license": "CC BY-SA 2.0"
+  },
+  "leak-2": {
+   "file": "photos/leak-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Burst_pipe_in_Long_Eaton.jpg",
+   "author": "Crep171166",
+   "license": "CC BY-SA 4.0"
+  },
+  "leak-3": {
+   "file": "photos/leak-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:BCA_pipe_burst_10.jpg",
+   "author": "Sarang",
+   "license": "Public domain"
+  },
+  "leak-4": {
+   "file": "photos/leak-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Water_Main_Break_(17098678601).jpg",
+   "author": "Metropolitan Transportation Authority of the State of New York",
+   "license": "CC BY 2.0"
+  },
+  "drain-1": {
+   "file": "photos/drain-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Storm_Drain_Clogged_-_Mid-City_New_Orleans.jpg",
+   "author": "Bart Everson",
+   "license": "CC BY 2.0"
+  },
+  "drain-2": {
+   "file": "photos/drain-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Sutphin_Bl_Jamaica_Av_td_(2019-08-18)_14.jpg",
+   "author": "Tdorante10",
+   "license": "CC BY-SA 4.0"
+  },
+  "drain-3": {
+   "file": "photos/drain-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Sutphin_Bl_Jamaica_Av_td_(2019-08-18)_23.jpg",
+   "author": "Tdorante10",
+   "license": "CC BY-SA 4.0"
+  },
+  "garbage-1": {
+   "file": "photos/garbage-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Illegal_dumping_at_Foxbar_-_geograph.org.uk_-_214954.jpg",
+   "author": "John Allan",
+   "license": "CC BY-SA 2.0"
+  },
+  "garbage-2": {
+   "file": "photos/garbage-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Illegal_dumping_of_rubbish_-_geograph.org.uk_-_8039866.jpg",
+   "author": "Bill Kasman",
+   "license": "CC BY-SA 2.0"
+  },
+  "garbage-3": {
+   "file": "photos/garbage-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Illegal_dumping_of_rubbish_at_Keralup,_Western_Australia,_September_2026_03.jpg",
+   "author": "Calistemon",
+   "license": "CC BY-SA 4.0"
+  },
+  "sidewalk-1": {
+   "file": "photos/sidewalk-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_sidewalk_LA.jpg",
+   "author": "Downtowngal",
+   "license": "CC BY-SA 4.0"
+  },
+  "sidewalk-2": {
+   "file": "photos/sidewalk-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_sidewalk_near_the_shore_of_the_St._Lawrence_River_near_Aultsville,_Ontario.jpg",
+   "author": "Aultsville",
+   "license": "CC BY-SA 4.0"
+  },
+  "sidewalk-3": {
+   "file": "photos/sidewalk-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:2008-06-28_Broken_sidewalk.jpg",
+   "author": "Ildar Sagdejev (Specious)",
+   "license": "CC BY-SA 3.0"
+  },
+  "sidewalk-4": {
+   "file": "photos/sidewalk-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_sidewalk_from_tree_root_growth_(Columbus,_Ohio,_USA)_1.jpg",
+   "author": "James St. John",
+   "license": "CC BY 2.0"
+  },
+  "sidewalk-4b": {
+   "file": "photos/sidewalk-4b.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_sidewalk_from_tree_root_growth_(Columbus,_Ohio,_USA)_2.jpg",
+   "author": "James St. John",
+   "license": "CC BY 2.0"
+  },
+  "furniture-1": {
+   "file": "photos/furniture-1.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_Bench_(20949764078).jpg",
+   "author": "Rob Swystun from Winnipeg, Canada",
+   "license": "CC BY 2.0"
+  },
+  "furniture-2": {
+   "file": "photos/furniture-2.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Cone_and_broken_bench_-_geograph.org.uk_-_4153511.jpg",
+   "author": "Gerald England",
+   "license": "CC BY-SA 2.0"
+  },
+  "furniture-3": {
+   "file": "photos/furniture-3.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Warszawa-broken_bench_(2).jpg",
+   "author": "Mariochom",
+   "license": "CC BY-SA 4.0"
+  },
+  "furniture-4": {
+   "file": "photos/furniture-4.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_Bus_Stop_Shelter_-_Montreal_(26358725406).jpg",
+   "author": "Coastal Elite from Halifax, Canada",
+   "license": "CC BY-SA 2.0"
+  },
+  "furniture-5": {
+   "file": "photos/furniture-5.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_bus_shelter_-_geograph.org.uk_-_5246020.jpg",
+   "author": "Philip Halling",
+   "license": "CC BY-SA 2.0"
+  },
+  "furniture-6": {
+   "file": "photos/furniture-6.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_bus_shelter,_Llanidloes_Road,_Newtown_-_geograph.org.uk_-_5269753.jpg",
+   "author": "Jaggery",
+   "license": "CC BY-SA 2.0"
+  },
+  "shelter-a": {
+   "file": "photos/shelter-a.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_Bus_Stop_Shelter_-_Montreal_(26111781270).jpg",
+   "author": "Coastal Elite from Halifax, Canada",
+   "license": "CC BY-SA 2.0"
+  },
+  "shelter-b": {
+   "file": "photos/shelter-b.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Damaged_Bus_Stop_Shelter_-_Montreal_(26384606285).jpg",
+   "author": "Coastal Elite from Halifax, Canada",
+   "license": "CC BY-SA 2.0"
+  },
+  "neg-manhole": {
+   "file": "photos/neg-manhole.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Manhole_cover_at_Viborg_Katedralskole.jpg",
+   "author": "W.carter",
+   "license": "Public domain"
+  },
+  "neg-bench": {
+   "file": "photos/neg-bench.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Broken_bench_mended_-_geograph.org.uk_-_4184827.jpg",
+   "author": "Gerald England",
+   "license": "CC BY-SA 2.0"
+  },
+  "neg-lamp": {
+   "file": "photos/neg-lamp.jpg",
+   "source": "Wikimedia Commons",
+   "url": "https://commons.wikimedia.org/wiki/File:Lamp_post,_Kossuth_Lajos_Street,_2020_Di%C3%B3sd.jpg",
+   "author": "Globetrotter19",
+   "license": "CC BY-SA 3.0"
+  },
+  "neg-street-1": {
+   "file": "photos/neg-street-1.jpg",
+   "source": "Mapillary",
+   "imageId": "1069684563573369",
+   "author": "kaart_4",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2021-10-15"
+  },
+  "neg-street-2": {
+   "file": "photos/neg-street-2.jpg",
+   "source": "Mapillary",
+   "imageId": "147096130721273",
+   "author": "inventariocundi",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2017-12-19"
+  },
+  "neg-street-3": {
+   "file": "photos/neg-street-3.jpg",
+   "source": "Mapillary",
+   "imageId": "382943746168130",
+   "author": "inventariocundi2",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2017-12-14"
+  },
+  "neg-street-4": {
+   "file": "photos/neg-street-4.jpg",
+   "source": "Mapillary",
+   "imageId": "478934966704752",
+   "author": "kaartcam",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2017-09-22"
+  },
+  "neg-street-5": {
+   "file": "photos/neg-street-5.jpg",
+   "source": "Mapillary",
+   "imageId": "1075549269869275",
+   "author": "kaart5",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2021-10-13"
+  },
+  "neg-street-6": {
+   "file": "photos/neg-street-6.jpg",
+   "source": "Mapillary",
+   "imageId": "1821393161918862",
+   "author": "angoca",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2016-01-09"
+  },
+  "kennedy-other-angle": {
+   "file": "photos/kennedy-other-angle.jpg",
+   "source": "Mapillary",
+   "imageId": "316969810244227",
+   "author": "kaart5",
+   "license": "CC BY-SA 4.0",
+   "capturedAt": "2021-10-17"
+  },
+  "seed-kennedy-hueco-before": {
+   "file": "../infra/seed/images/kennedy-hueco/before.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-kennedy-hueco-after": {
+   "file": "../infra/seed/images/kennedy-hueco/after.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-martires-basuras-before": {
+   "file": "../infra/seed/images/martires-basuras/before.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-martires-basuras-after": {
+   "file": "../infra/seed/images/martires-basuras/after.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-fontibon-fuga-before": {
+   "file": "../infra/seed/images/fontibon-fuga/before.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-fontibon-fuga-after": {
+   "file": "../infra/seed/images/fontibon-fuga/after.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-barrios-unidos-anden-before": {
+   "file": "../infra/seed/images/barrios-unidos-anden/before.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-barrios-unidos-anden-after": {
+   "file": "../infra/seed/images/barrios-unidos-anden/after.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-puente-aranda-sumidero-before": {
+   "file": "../infra/seed/images/puente-aranda-sumidero/before.jpg",
+   "source": "Demo example (infra/seed): Mapillary photo edited with AI",
+   "synthetic": true
+  },
+  "seed-puente-aranda-sumidero-after": {
+   "file": "../infra/seed/images/puente-aranda-sumidero/after.jpg",
+   "source": "Demo example (infra/seed): unedited Mapillary photo of another street",
+   "synthetic": false
+  }
+ },
+ "classification": [
+  {
+   "photo": "pothole-1",
+   "label": "POTHOLE",
+   "small": true
+  },
+  {
+   "photo": "pothole-2",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pothole-3",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pothole-4",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pothole-5",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pothole-6",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pothole-7",
+   "label": "POTHOLE"
+  },
+  {
+   "photo": "pole-1",
+   "label": "DAMAGED_POLE",
+   "small": true
+  },
+  {
+   "photo": "pole-2",
+   "label": "DAMAGED_POLE"
+  },
+  {
+   "photo": "pole-3",
+   "label": "DAMAGED_POLE"
+  },
+  {
+   "photo": "pole-4",
+   "label": "DAMAGED_POLE"
+  },
+  {
+   "photo": "tree-1",
+   "label": "RISKY_TREE",
+   "small": true
+  },
+  {
+   "photo": "tree-2",
+   "label": "RISKY_TREE"
+  },
+  {
+   "photo": "tree-3",
+   "label": "RISKY_TREE"
+  },
+  {
+   "photo": "tree-4",
+   "label": "RISKY_TREE"
+  },
+  {
+   "photo": "light-1",
+   "label": "STREETLIGHT_OUT",
+   "accept": [
+    "STREETLIGHT_OUT",
+    "DAMAGED_POLE"
+   ],
+   "small": true
+  },
+  {
+   "photo": "light-2",
+   "label": "STREETLIGHT_OUT",
+   "accept": [
+    "STREETLIGHT_OUT",
+    "DAMAGED_POLE"
+   ]
+  },
+  {
+   "photo": "light-3",
+   "label": "DAMAGED_POLE",
+   "accept": [
+    "DAMAGED_POLE",
+    "STREETLIGHT_OUT"
+   ]
+  },
+  {
+   "photo": "light-4",
+   "label": "DAMAGED_POLE",
+   "accept": [
+    "DAMAGED_POLE",
+    "STREETLIGHT_OUT"
+   ]
+  },
+  {
+   "photo": "leak-1",
+   "label": "WATER_LEAK",
+   "small": true
+  },
+  {
+   "photo": "leak-2",
+   "label": "WATER_LEAK"
+  },
+  {
+   "photo": "leak-3",
+   "label": "WATER_LEAK"
+  },
+  {
+   "photo": "leak-4",
+   "label": "WATER_LEAK"
+  },
+  {
+   "photo": "drain-1",
+   "label": "BLOCKED_DRAIN",
+   "small": true
+  },
+  {
+   "photo": "drain-2",
+   "label": "BLOCKED_DRAIN"
+  },
+  {
+   "photo": "drain-3",
+   "label": "BLOCKED_DRAIN"
+  },
+  {
+   "photo": "garbage-1",
+   "label": "GARBAGE_DUMP",
+   "small": true
+  },
+  {
+   "photo": "garbage-2",
+   "label": "GARBAGE_DUMP"
+  },
+  {
+   "photo": "garbage-3",
+   "label": "GARBAGE_DUMP"
+  },
+  {
+   "photo": "sidewalk-1",
+   "label": "DAMAGED_SIDEWALK",
+   "small": true
+  },
+  {
+   "photo": "sidewalk-2",
+   "label": "DAMAGED_SIDEWALK"
+  },
+  {
+   "photo": "sidewalk-3",
+   "label": "DAMAGED_SIDEWALK"
+  },
+  {
+   "photo": "sidewalk-4",
+   "label": "DAMAGED_SIDEWALK"
+  },
+  {
+   "photo": "furniture-1",
+   "label": "DAMAGED_STREET_FURNITURE",
+   "small": true
+  },
+  {
+   "photo": "furniture-2",
+   "label": "DAMAGED_STREET_FURNITURE"
+  },
+  {
+   "photo": "furniture-3",
+   "label": "DAMAGED_STREET_FURNITURE"
+  },
+  {
+   "photo": "furniture-4",
+   "label": "DAMAGED_STREET_FURNITURE"
+  },
+  {
+   "photo": "furniture-5",
+   "label": "DAMAGED_STREET_FURNITURE"
+  },
+  {
+   "photo": "furniture-6",
+   "label": "DAMAGED_STREET_FURNITURE"
+  }
+ ],
+ "negatives": [
+  {
+   "photo": "neg-street-1",
+   "small": true
+  },
+  {
+   "photo": "neg-street-2"
+  },
+  {
+   "photo": "neg-street-3"
+  },
+  {
+   "photo": "neg-street-4"
+  },
+  {
+   "photo": "neg-street-5"
+  },
+  {
+   "photo": "neg-street-6"
+  },
+  {
+   "photo": "neg-manhole",
+   "small": true
+  },
+  {
+   "photo": "neg-bench"
+  },
+  {
+   "photo": "neg-lamp"
+  }
+ ],
+ "dedup": [
+  {
+   "a": "tree-2",
+   "b": "tree-2b",
+   "same": true,
+   "small": true
+  },
+  {
+   "a": "sidewalk-4",
+   "b": "sidewalk-4b",
+   "same": true
+  },
+  {
+   "a": "shelter-a",
+   "b": "shelter-b",
+   "same": true
+  },
+  {
+   "a": "lamp-a",
+   "b": "lamp-b",
+   "same": true
+  },
+  {
+   "a": "pothole-1",
+   "b": "pothole-2",
+   "same": false,
+   "small": true
+  },
+  {
+   "a": "garbage-1",
+   "b": "garbage-2",
+   "same": false
+  },
+  {
+   "a": "sidewalk-1",
+   "b": "sidewalk-2",
+   "same": false
+  },
+  {
+   "a": "tree-1",
+   "b": "tree-3",
+   "same": false
+  },
+  {
+   "a": "furniture-4",
+   "b": "furniture-5",
+   "same": false
+  }
+ ],
+ "verification": [
+  {
+   "before": "tree-2",
+   "after": "tree-2b",
+   "expected": "NOT_REPAIRED",
+   "note": "the same fallen tree, another angle",
+   "small": true
+  },
+  {
+   "before": "sidewalk-4",
+   "after": "sidewalk-4b",
+   "expected": "NOT_REPAIRED",
+   "note": "the same cracked sidewalk"
+  },
+  {
+   "before": "shelter-a",
+   "after": "shelter-b",
+   "expected": "NOT_REPAIRED",
+   "note": "the same smashed bus shelter"
+  },
+  {
+   "before": "lamp-a",
+   "after": "lamp-b",
+   "expected": "NOT_REPAIRED",
+   "note": "the same bent lamp post"
+  },
+  {
+   "before": "pothole-1",
+   "after": "neg-street-2",
+   "expected": "INCONCLUSIVE",
+   "note": "a different street",
+   "small": true
+  },
+  {
+   "before": "garbage-1",
+   "after": "garbage-3",
+   "expected": "INCONCLUSIVE",
+   "note": "another dump, another place"
+  },
+  {
+   "before": "seed-kennedy-hueco-before",
+   "after": "kennedy-other-angle",
+   "expected": "INCONCLUSIVE",
+   "note": "the same avenue from another angle: the pothole's spot is not in the photo"
+  },
+  {
+   "before": "seed-kennedy-hueco-before",
+   "after": "seed-kennedy-hueco-after",
+   "expected": "REPAIRED",
+   "synthetic": true,
+   "small": true
+  },
+  {
+   "before": "seed-martires-basuras-before",
+   "after": "seed-martires-basuras-after",
+   "expected": "REPAIRED",
+   "synthetic": true
+  },
+  {
+   "before": "seed-fontibon-fuga-before",
+   "after": "seed-fontibon-fuga-after",
+   "expected": "REPAIRED",
+   "synthetic": true
+  },
+  {
+   "before": "seed-barrios-unidos-anden-before",
+   "after": "seed-barrios-unidos-anden-after",
+   "expected": "NOT_REPAIRED",
+   "synthetic": true
+  },
+  {
+   "before": "seed-puente-aranda-sumidero-before",
+   "after": "seed-puente-aranda-sumidero-after",
+   "expected": "INCONCLUSIVE",
+   "synthetic": true
+  }
+ ]
+}

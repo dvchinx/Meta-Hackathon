@@ -4,11 +4,12 @@
 
 ## Qué es
 
-Plataforma para que ciudadanos de Bogotá reporten daños urbanos por **WhatsApp** o una **app web**, con fotos o video, audio o texto con el contexto, y ubicación.
+Plataforma para que ciudadanos de Bogotá reporten daños urbanos por la **app web**, con fotos, texto con el contexto y ubicación. (El canal de **WhatsApp** se canceló el 2026-10-29: ver la sección WhatsApp.)
 
 - **Muse Spark** interpreta el reporte (tipo de daño, urgencia, validez, pistas de ubicación) y lee las respuestas de las entidades.
 - **SAM 3.1** segmenta el daño, las caras y las placas. Con esas máscaras estimamos el área, difuminamos y comparamos fotos de antes y después.
 - Los reportes del mismo punto se agrupan en un **Issue** que aparece en un mapa público con contador, tiempo abierto, entidad responsable y estado.
+- La página pública **Entidades** (`#/entidades`, `GET /api/agencies/scorecards`) muestra por entidad las peticiones vencidas sin respuesta, las respuestas evasivas y cuántas reparaciones declaradas confirmó o desmintió una foto.
 - **Regla central del producto:** un Issue solo pasa a `VERIFIED` cuando una foto nueva confirma la reparación. Que la entidad declare que lo arregló **nunca** basta.
 
 Proyecto para el Meta Global AI Developer Hackathon (10 días). Priorizar un flujo completo que funcione sobre funcionalidades extra.
@@ -18,8 +19,8 @@ Proyecto para el Meta Global AI Developer Hackathon (10 días). Priorizar un flu
 - Ciudad: **solo Bogotá**. Un reporte se acepta solo si su punto cae en una de las 20 localidades (polígonos de Catastro en la tabla `locality`, migración V7). El mapa se limita a Colombia (`COLOMBIA_BOUNDS` en `web/src/map/maplibre.ts`).
 - Tipos de daño (decisión del 2026-10-27): `POTHOLE`, `OPEN_MANHOLE`, `DAMAGED_POLE`, `RISKY_TREE`, `STREETLIGHT_OUT`, `WATER_LEAK`, `BLOCKED_DRAIN`, `GARBAGE_DUMP`, `DAMAGED_SIDEWALK`, `DAMAGED_STREET_FURNITURE`. Cualquier otro → `OTHER`, con revisión manual. Animales quedan fuera: no encajan con la verificación por foto.
 - **La radicación es simulada**: el ciudadano radica con sus datos, generamos un radicado `SIM-AAAA-NNNNNN` y el documento imprimible del derecho de petición, el Issue pasa a `FILED`, pero no se envía nada a la entidad. Junto al radicado siempre mostramos el canal oficial real (`official_channel`). Un panel de administración simulará las respuestas.
-- Prioridad si hay que recortar (lo primero se recorta primero): video → formulario web de reporte → petición imprimible → ranking de entidades.
-- **Nunca se recorta:** flujo de WhatsApp, mapa, verificación antes/después.
+- Prioridad si hay que recortar (lo primero se recorta primero): video → petición imprimible.
+- **Nunca se recorta:** formulario web de reporte (es el único canal), mapa, verificación antes/después.
 
 ## Estructura del repositorio
 
@@ -57,8 +58,9 @@ cd vision-service && .venv/bin/pytest && .venv/bin/ruff check . && .venv/bin/ruf
 cd web && npm run dev
 cd web && npm run lint && npm run typecheck && npm test && npm run build
 
-# Evaluación (gasta créditos: ver "Presupuesto de créditos")
-cd eval && python run_eval.py --subset small
+# Evaluación contra el backend local con modelos reales (gasta créditos: ver "Presupuesto de créditos" y eval/README.md)
+cd eval && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+cd eval && .venv/bin/python run_eval.py --subset small
 ```
 
 Al cambiar dependencias de vision-service, regenerar `requirements.lock` (lo usa el Dockerfile) dentro de `python:3.13-slim`:
@@ -114,10 +116,13 @@ Todos los modelos de Meta se consumen por la **Meta Model API** con API key (`mu
    Si `isValidUrbanDamage=false` o `confidence < 0.6`, el bot pide otra foto en lugar de registrar.
    Muse Spark acepta audio directamente: las notas de voz de WhatsApp van en la misma llamada, sin transcripción aparte.
 2. **Segmentación (SAM 3.1 vía API, orquestado por vision-service):** una llamada por concepto (daño, `face`, `license plate`). vision-service calcula localmente el área estimada (m²) y genera la versión difuminada.
-3. **Confirmación:** el bot envía el resumen con la imagen marcada. Solo después de que el usuario confirma se crea o actualiza el Issue. El formulario web usa el mismo flujo (`POST /api/reports` y `POST /api/reports/{id}/confirmation`), que además sirve para probar todo sin WhatsApp.
+3. **Confirmación:** la web muestra el resumen con la imagen marcada (`POST /api/reports` y `POST /api/reports/{id}/confirmation`). Solo después de que el ciudadano confirma se crea o actualiza el Issue. El bot de WhatsApp usaba el mismo flujo.
 4. **Deduplicación:** `ST_DWithin` a 30 m + mismo `damageType` + Muse Spark compara las dos fotos difuminadas (`same-damage.v1`, confianza ≥ 0,7) → se suma al Issue existente. Si Muse no está disponible, se une al candidato más cercano.
 5. **Respuesta de la entidad (Muse Spark, `classify-agency-response.v1`):** clasifica la respuesta en `RESOLVES`, `EVASIVE` o `NO_RESPONSE`. Las respuestas se escriben en el panel admin (`#/admin`, `POST /api/admin/...` con la cabecera `X-Admin-Token` = `ADMIN_TOKEN`; sin token, la API admin no existe).
-6. **Verificación antes/después (`verify-repair.v1`):** solo con el Issue en `REPAIR_CLAIMED` o `NEEDS_MORE_EVIDENCE`. Muse Spark compara la foto original difuminada con la nueva difuminada (si no es el mismo lugar → inconcluso). Para daños que desaparecen al repararse (`DamageType.areaShrinksWhenRepaired`: hueco, tapa, fuga, basuras, andén) el área de SAM también debe coincidir (≤ 30 % de la original = reparado). Reglas en `RepairCheck`. Si no coinciden → `NEEDS_MORE_EVIDENCE`. En modo fake el juicio siempre es "sigue dañado".
+6. **Verificación antes/después (`verify-repair.v2`):** solo con el Issue en `REPAIR_CLAIMED` o `NEEDS_MORE_EVIDENCE`. Muse Spark compara la foto original difuminada con la nueva difuminada; si no es el mismo lugar o el punto del daño no se ve en la foto nueva (`damageSpotVisible`) → inconcluso. Reglas en `RepairCheck`:
+   - "Reparado" exige confianza ≥ 0,85; "sigue dañado", ≥ 0,7. Cerrar un daño por error es lo grave (corta los avisos); reabrirlo es reversible. La evaluación encontró un "reparado" con 0,82 sobre una foto de otro ángulo.
+   - Para daños que desaparecen al repararse (`DamageType.areaShrinksWhenRepaired`: hueco, tapa, fuga, basuras) el área de SAM también debe coincidir (≤ 30 % de la original = reparado). Si SAM no midió nada en la original (< 0,1 % de la foto), decide solo Muse. Los andenes no comparan área: SAM no tiene frase para el daño, solo para el andén.
+   - Si no coinciden → `NEEDS_MORE_EVIDENCE`, con un motivo público neutro en lugar del de Muse (`RepairCheck.publicReason`). En modo fake el juicio siempre es "sigue dañado".
 
 Reglas:
 
@@ -142,6 +147,8 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 
 ## WhatsApp
 
+> **Canal cancelado (2026-10-29).** Meta rechazó la cuenta de WhatsApp Business: según su correo, una automatización incumple sus políticas. El código (webhook, bot, avisos por plantilla) sigue en el repo y queda apagado sin `WHATSAPP_APP_SECRET` ni `WHATSAPP_ACCESS_TOKEN`. No invertir más tiempo en él ni presentarlo en la demo. Lo de abajo describe cómo funciona por si se reactiva.
+
 - Webhook **idempotente**: deduplicar por `message.id` (tabla `processed_message`, solo ids), porque WhatsApp reintenta las entregas.
 - El webhook responde 200 de inmediato y procesa en memoria (`StripedMessageDispatcher`): en orden por remitente, en paralelo entre remitentes. **No hay outbox para los mensajes entrantes** a propósito: guardarlos exigiría almacenar el número en claro. Si el backend se reinicia a mitad de un mensaje, el ciudadano debe reenviarlo.
 - Los estados de entrega (`sent`, `delivered`, `failed` con código de error de Meta) solo se registran en el log, sin el número.
@@ -161,7 +168,7 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 - **Datos para radicar** (decisión del 2026-10-27, reemplaza "la petición sale a nombre de la plataforma"): opcionales, se piden solo cuando el ciudadano decide radicar. Tipo y número de documento, nombres, apellidos, celular y dirección opcional (`FilerProfile`). Se guardan **cifrados con AES-256-GCM** (`PERSONAL_DATA_KEY`; sin clave, la radicación queda apagada) y **solo se comparten con la entidad ante la que se radica, al radicar**. Cada consentimiento (guardar y compartir) registra la versión de la política aceptada; el backend rechaza versiones viejas (`PrivacyPolicy.CURRENT_VERSION` = `web/src/privacy/policy.ts`).
 - La política de tratamiento de datos (Ley 1581 de 2012) vive en `web/src/privacy/PrivacyPolicyPage.tsx` (`#/privacidad`). Responsable: el equipo del hackathon. Si cambia el texto, subir la versión en ambos lados.
 - Desde WhatsApp no se piden datos personales: el bot envía el enlace `#/radicar?issue=<id>` de la web.
-- **Métodos de entrada**, en este orden: correo y contraseña (hecho), Google (hecho), celular con código por WhatsApp (cuando Meta apruebe la verificación y una plantilla de autenticación).
+- **Métodos de entrada:** correo y contraseña, y Google. (El inicio con celular y código por WhatsApp quedó descartado con el canal.)
 - **Google:** botón oficial de Google Identity Services en modo ventana emergente (sin URI de redirección). El backend verifica el ID token con las llaves públicas de Google (`nimbus-jose-jwt`): firma RS256, `aud` = `GOOGLE_CLIENT_ID`, emisor de Google, vigencia y `email_verified`. La web obtiene el ID de cliente en tiempo de ejecución de `GET /api/auth/config`; sin él, el botón no aparece. Busca la cuenta por `google_subject` y luego por correo; si ese correo nunca se verificó, descarta la contraseña existente y cierra sus sesiones (alguien la creó sin ser dueño del correo).
 - **Hay que verificar el correo antes de reportar** (enlace por correo, vence en 24 h). Restablecer la contraseña también verifica el correo y cierra todas las sesiones.
 - Sesión en cookie `civic_session`: HttpOnly, `SameSite=Lax` (es la protección CSRF), `Secure` en HTTPS, 30 días. En la base solo se guarda el SHA-256 del secreto, igual que los enlaces de correo (un solo uso).
@@ -228,8 +235,8 @@ Red interna civic: civic-backend, civic-vision, civic-postgres (PostGIS), volume
 
 ## Evaluación
 
-`eval/` contiene fotos reales de Bogotá etiquetadas (tipo, área aproximada, grupo de duplicados, reparado o no). Métricas que se reportan en el README:
-precisión de clasificación, error del área, precisión de la deduplicación, acierto de la verificación y costo promedio por reporte.
+`eval/` contiene 55 fotos reales etiquetadas a mano (Wikimedia Commons de varios países para los daños, calles de Bogotá en Mapillary para las fotos sin daño) y 5 pares sintéticos de `infra/seed/` para los "reparados". `run_eval.py` las pasa por el flujo real del backend local. Detalle, fuentes y resultados: `eval/README.md`.
+Métricas que se reportan en el README: acierto del tipo de daño, rechazo de fotos sin daño, detección de SAM (área > 0), deduplicación, acierto de la verificación con los "reparado" falsos aparte, y costo promedio por reporte. No se mide el error del área: no hay una medida real con qué compararla.
 
 ## Qué NO hacer
 
@@ -249,8 +256,8 @@ precisión de clasificación, error del área, precisión de la deduplicación, 
 
 - [x] SAM 3.1 y Muse Spark disponibles en la Meta Model API (probado el 2026-10-26, ver `docs/meta-api.md`).
 - [x] Muse Spark acepta audio directamente.
-- [ ] Número de prueba de WhatsApp Cloud API y plantillas de `docs/whatsapp-templates.md` enviadas a aprobación.
-- [x] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt `verify-repair.v1` (2026-10-28, con los daños de ejemplo; resultados en `docs/meta-api.md`). Pendiente: frases de SAM para fugas y andenes, y `RepairCheck` con área 0.
+- [x] ~~Número de prueba de WhatsApp Cloud API y plantillas.~~ Canal cancelado el 2026-10-29: Meta rechazó la cuenta de WhatsApp Business.
+- [x] Probar en vivo los conceptos de SAM de los tipos nuevos y el prompt de verificación (2026-10-28 y 2026-10-29; resultados en `docs/meta-api.md` y `eval/README.md`). Fugas: `"wet pavement"`. Andenes: ninguna frase encuentra el daño. Paraderos de bus: `"bench"` no los encuentra.
 - [x] VPS: red `deploy_personal-network`, ~3,2 GB de RAM disponibles, sin swap.
 - [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
 - [x] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
