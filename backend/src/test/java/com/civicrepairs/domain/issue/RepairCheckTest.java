@@ -45,9 +45,45 @@ class RepairCheckTest {
 	}
 
 	@Test
-	void withNoDamageMeasuredBeforeAnyDamageNowCountsAsAllOfIt() {
-		assertThat(RepairCheck.areaRatio(0, 0)).isZero();
-		assertThat(RepairCheck.areaRatio(0, 0.05)).isEqualTo(1);
-		assertThat(RepairCheck.areaRatio(0.2, 0.05)).isEqualTo(0.25);
+	void closingAnIssueNeedsMoreCertaintyThanReopeningIt() {
+		// The evaluation's unsafe case: the same avenue from another angle, judged repaired with 0.82.
+		assertThat(RepairCheck.decide(DamageType.POTHOLE, 0.02, 0.0, muse(Judgement.REPAIRED, 0.82)))
+				.isEqualTo(Outcome.INCONCLUSIVE);
+		assertThat(RepairCheck.decide(DamageType.POTHOLE, 0.02, 0.02, muse(Judgement.NOT_REPAIRED, 0.82)))
+				.isEqualTo(Outcome.NOT_REPAIRED);
+		assertThat(RepairCheck.decide(DamageType.POTHOLE, 0.02, 0.0, muse(Judgement.REPAIRED, 0.85)))
+				.isEqualTo(Outcome.REPAIRED);
+	}
+
+	@Test
+	void withNoDamageMeasuredBeforeMuseDecidesAloneInBothDirections() {
+		// SAM found no leak in the original photo: 0 % then and 0 % now must not approve or block anything by itself.
+		assertThat(RepairCheck.decide(DamageType.WATER_LEAK, 0.0, 0.0, muse(Judgement.NOT_REPAIRED, 0.9)))
+				.isEqualTo(Outcome.NOT_REPAIRED);
+		assertThat(RepairCheck.decide(DamageType.WATER_LEAK, 0.0, 0.0, muse(Judgement.REPAIRED, 0.9)))
+				.isEqualTo(Outcome.REPAIRED);
+		assertThat(RepairCheck.decide(DamageType.POTHOLE, 0.0004, 0.05, muse(Judgement.REPAIRED, 0.9)))
+				.isEqualTo(Outcome.REPAIRED);
+		assertThat(RepairCheck.decide(DamageType.WATER_LEAK, 0.0, 0.0, muse(Judgement.REPAIRED, 0.5)))
+				.isEqualTo(Outcome.INCONCLUSIVE);
+	}
+
+	@Test
+	void brokenSidewalksAreJudgedByMuseOnly() {
+		// SAM only finds the sidewalk itself, which is still there after the repair.
+		assertThat(RepairCheck.decide(DamageType.DAMAGED_SIDEWALK, 0.07, 0.15, muse(Judgement.NOT_REPAIRED, 0.9)))
+				.isEqualTo(Outcome.NOT_REPAIRED);
+		assertThat(RepairCheck.decide(DamageType.DAMAGED_SIDEWALK, 0.07, 0.15, muse(Judgement.REPAIRED, 0.9)))
+				.isEqualTo(Outcome.REPAIRED);
+	}
+
+	@Test
+	void aJudgementSetAsideIsNotExplainedWithItsOwnReason() {
+		var unconvincing = new RepairVerdict(Judgement.REPAIRED, 0.78, "La vía aparece sin hueco.");
+		assertThat(RepairCheck.publicReason(Outcome.INCONCLUSIVE, unconvincing)).isEqualTo(RepairCheck.SET_ASIDE_REASON);
+		assertThat(RepairCheck.publicReason(Outcome.REPAIRED, new RepairVerdict(Judgement.REPAIRED, 0.9, "Tapado.")))
+				.isEqualTo("Tapado.");
+		var differentPlace = new RepairVerdict(Judgement.INCONCLUSIVE, 0.9, "No es el mismo lugar.");
+		assertThat(RepairCheck.publicReason(Outcome.INCONCLUSIVE, differentPlace)).isEqualTo("No es el mismo lugar.");
 	}
 }

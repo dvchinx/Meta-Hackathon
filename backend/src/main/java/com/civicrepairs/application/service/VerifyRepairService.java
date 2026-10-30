@@ -96,6 +96,9 @@ class VerifyRepairService implements VerifyRepairUseCase {
 					"No pudimos analizar la foto en este momento. Intenta de nuevo más tarde.");
 		}
 		Outcome outcome = RepairCheck.decide(issue.damageType(), areaBefore, after.areaFraction(), verdict);
+		// Judgement and confidence stay as Muse gave them (the model call log keeps its own reason).
+		RepairVerdict shown = new RepairVerdict(verdict.judgement(), verdict.confidence(),
+				RepairCheck.publicReason(outcome, verdict));
 
 		IssueStatus status = tx.execute(s -> {
 			Issue locked = issues.findByIdForUpdate(issueId).orElseThrow(VerifyRepairService::notFound);
@@ -103,10 +106,10 @@ class VerifyRepairService implements VerifyRepairUseCase {
 			locked.applyVerification(new VerificationResult(outcome, blurred.id().toString()), clock.instant());
 			issues.save(locked);
 			verifications.save(new Verification(UUID.randomUUID(), issueId, verifierId, original.id(), blurred.id(),
-					areaBefore, after.areaFraction(), verdict, outcome, clock.instant()));
+					areaBefore, after.areaFraction(), shown, outcome, clock.instant()));
 			return locked.status();
 		});
-		return new VerificationReceipt(issueId, outcome, status, verdict.reason(), blurred.id());
+		return new VerificationReceipt(issueId, outcome, status, shown.reason(), blurred.id());
 	}
 
 	private static void requireVerifiable(Issue issue) {

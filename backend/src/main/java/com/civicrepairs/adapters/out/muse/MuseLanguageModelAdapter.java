@@ -56,7 +56,7 @@ class MuseLanguageModelAdapter implements LanguageModelPort {
 	private final MusePrompt interpretPrompt = MusePrompt.load("interpret-report.v2");
 	private final MusePrompt sameDamagePrompt = MusePrompt.load("same-damage.v1");
 	private final MusePrompt agencyResponsePrompt = MusePrompt.load("classify-agency-response.v1");
-	private final MusePrompt verifyRepairPrompt = MusePrompt.load("verify-repair.v1");
+	private final MusePrompt verifyRepairPrompt = MusePrompt.load("verify-repair.v2");
 
 	MuseLanguageModelAdapter(RestClient.Builder builder, JsonMapper json, ModelCallLedgerPort ledger,
 			ModelMetering metering, MetaApiProperties properties) {

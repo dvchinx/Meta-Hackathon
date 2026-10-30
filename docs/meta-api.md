@@ -70,10 +70,14 @@ Petición (imagen en base64; **probado** con una foto de un bache de 960×720):
 - Pedimos `metadata.mask_encoding: "one_bit"` (más pequeño; solo necesitamos máscaras binarias). Probado de punta a punta.
 - **Las máscaras de instancias no se solapan:** en la prueba del bache, SAM separó el hueco profundo y el área desgastada alrededor, y cada píxel pertenece a un solo objeto. El área del daño es la **unión** de todas las detecciones.
 - **SAM es sensible a la re-codificación cerca de su umbral:** la misma foto devolvió el área desgastada alrededor del bache (c≈0,66) al enviarla tal cual, y no la devolvió con una copia re-codificada a calidad 85. vision-service manda los JPEG que no necesitan reducción byte por byte. Para antes/después, ambas fotos deben pasar por el mismo camino.
-- **Conceptos por tipo de daño** (`DAMAGE_CONCEPTS` en `vision-service/app/analysis.py`), **probados** el 2026-10-28 con los 15 daños de ejemplo (`infra/seed/`: fotos de Mapillary con el daño agregado por IA, no fotos de ciudadanos):
+- **Conceptos por tipo de daño** (`DAMAGE_CONCEPTS` en `vision-service/app/analysis.py`), probados el 2026-10-28 con los 15 daños de ejemplo (`infra/seed/`) y el 2026-10-29 con la evaluación (`eval/`, fotos reales):
   - Detectan el daño: `"pothole"` (0,8–2 % de la foto), `"open manhole"`, `"utility pole"`, `"tree"`, `"street light"`, `"garbage pile"` (9–12 %), `"bench"`. `"storm drain"` detecta la rejilla, pero muy pequeña (0,04 %).
-  - **No detectan nada:** `"water puddle"` (ni con un chorro y un charco grandes) y `"cracked sidewalk"`. Esos reportes quedan con área 0 y la foto marcada sale sin resaltar. Hay que probar otras frases (p. ej. `"puddle"`, `"water"`, `"broken pavement"`).
-  - Con área 0 en la foto original, `RepairCheck` hoy da por buena una reparación y bloquea "sigue dañado" (la proporción 0/0 cuenta como 0). Pasó en la verificación del andén de ejemplo.
+  - **Fugas:** `"water puddle"`, `"puddle"`, `"water"`, `"flowing water"` y `"water leak"` no detectan nada. `"wet pavement"` sí: 31 % de la foto con la fuga y 0 % con el andén seco. Con lluvia marcará toda la calle: una foto de verificación de un día lluvioso bloquea el "reparado" y pide otra foto.
+  - **Andenes:** ninguna frase encuentra el daño (`"cracked sidewalk"`, `"broken pavement"`, `"broken sidewalk"`, `"crack"`, `"rubble"`, `"broken paving slabs"`, `"damaged sidewalk"`). `"hole in the ground"` encontró el hueco del andén en una foto (0,2 %) y no en la siguiente, donde se ve más grande. Se usa `"sidewalk"`, que marca el andén entero, y los andenes no comparan área en la verificación.
+  - **Paraderos de bus:** `"bench"` no los encuentra (3 de 3 en la evaluación con área 0).
+  - En la evaluación SAM encontró el daño en 30 de 39 reportes aceptados (`eval/README.md`).
+  - Si se cambia una frase, subir `VisionServiceAdapter.VERSION`: es parte de la clave de la caché.
+- **`verify-repair`:** con una foto de la misma avenida tomada desde otro ángulo, sin el punto del hueco a la vista, Muse respondió `sameLocation: true`, `damageSpotVisible: true` y "reparado" con 0,78–0,82, aunque el prompt v2 pide ubicar el punto con referencias fijas. Los "reparado" correctos estuvieron entre 0,93 y 0,98. Por eso `RepairCheck` exige 0,85 para "reparado".
 - `"face"` también detecta caras de animales (en una prueba difuminó la cara de un burro). Difuminar de más es aceptable; lo peligroso sería difuminar de menos.
 
 ## Costo estimado por reporte

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sameLocation", "damageSpotVisible", "judgement", "confidence", "reason"],
+  "properties": {
+    "sameLocation": { "type": "boolean" },
+    "damageSpotVisible": { "type": "boolean" },
+    "judgement": { "type": "string", "enum": ["REPAIRED", "NOT_REPAIRED", "INCONCLUSIVE"] },
+    "confidence": { "type": "number" },
+    "reason": { "type": "string" }
+  }
+}

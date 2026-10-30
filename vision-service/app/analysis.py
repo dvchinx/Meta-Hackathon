@@ -27,18 +27,19 @@ class DamageType(StrEnum):
 
 JPEG_MAGIC = b"\xff\xd8\xff"
 
-# SAM noun phrases. OTHER has no concept: it goes to manual review without damage segmentation.
-# Only "pothole" has been tried against the live API; the rest are untested (see docs/meta-api.md).
+# SAM noun phrases, tried against the live API (docs/meta-api.md). OTHER has no concept: it goes to manual review
+# without damage segmentation. No phrase finds a broken sidewalk itself, so "sidewalk" marks the whole slab and the
+# backend does not compare areas for that type.
 DAMAGE_CONCEPTS: dict[DamageType, str | None] = {
     DamageType.POTHOLE: "pothole",
     DamageType.OPEN_MANHOLE: "open manhole",
     DamageType.DAMAGED_POLE: "utility pole",
     DamageType.RISKY_TREE: "tree",
     DamageType.STREETLIGHT_OUT: "street light",
-    DamageType.WATER_LEAK: "water puddle",
+    DamageType.WATER_LEAK: "wet pavement",
     DamageType.BLOCKED_DRAIN: "storm drain",
     DamageType.GARBAGE_DUMP: "garbage pile",
-    DamageType.DAMAGED_SIDEWALK: "cracked sidewalk",
+    DamageType.DAMAGED_SIDEWALK: "sidewalk",
     DamageType.DAMAGED_STREET_FURNITURE: "bench",
     DamageType.OTHER: None,
 }

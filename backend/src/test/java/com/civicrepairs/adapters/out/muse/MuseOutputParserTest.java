@@ -92,14 +92,31 @@ class MuseOutputParserTest {
 	@Test
 	void aDifferentPlaceIsNeverAVerdictOnTheRepair() {
 		var verdict = parser.repair("""
-				{"sameLocation":false,"judgement":"REPAIRED","confidence":0.95,"reason":"Otra calle."}
+				{"sameLocation":false,"damageSpotVisible":true,"judgement":"REPAIRED","confidence":0.95,
+				"reason":"Otra calle."}
 				""");
 
 		assertThat(verdict.judgement()).isEqualTo(Judgement.INCONCLUSIVE);
 		assertThat(parser.repair("""
-				{"sameLocation":true,"judgement":"NOT_REPAIRED","confidence":0.8,"reason":"El hueco sigue ahí."}
+				{"sameLocation":true,"damageSpotVisible":true,"judgement":"NOT_REPAIRED","confidence":0.8,
+				"reason":"El hueco sigue ahí."}
 				""").judgement()).isEqualTo(Judgement.NOT_REPAIRED);
-		assertThatThrownBy(() -> parser.repair("{\"sameLocation\":true,\"judgement\":\"REPAIRED\",\"confidence\":0.8}"))
-				.isInstanceOf(InvalidModelOutputException.class);
+		assertThatThrownBy(() -> parser.repair("""
+				{"sameLocation":true,"damageSpotVisible":true,"judgement":"REPAIRED","confidence":0.8}
+				""")).isInstanceOf(InvalidModelOutputException.class);
+	}
+
+	@Test
+	void aPhotoThatMissesTheDamageSpotIsNeverAVerdictEither() {
+		// Same corner, but the drain is out of frame: an empty street proves nothing.
+		var verdict = parser.repair("""
+				{"sameLocation":true,"damageSpotVisible":false,"judgement":"REPAIRED","confidence":0.75,
+				"reason":"No se ve el sumidero."}
+				""");
+
+		assertThat(verdict.judgement()).isEqualTo(Judgement.INCONCLUSIVE);
+		assertThatThrownBy(() -> parser.repair("""
+				{"sameLocation":true,"judgement":"REPAIRED","confidence":0.8,"reason":"Tapado."}
+				""")).isInstanceOf(InvalidModelOutputException.class);
 	}
 }

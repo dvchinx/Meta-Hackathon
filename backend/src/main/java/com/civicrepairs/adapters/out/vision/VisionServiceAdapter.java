@@ -32,7 +32,8 @@ import java.util.Base64;
 @ConditionalOnExpression("!'${civic.vision.url:}'.isBlank()")
 class VisionServiceAdapter implements VisionPort {
 
-	static final String VERSION = "vision-analyze.v1";
+	/** Part of the cache key: bump it when vision-service changes its SAM phrases or parameters. */
+	static final String VERSION = "vision-analyze.v2";
 
 	private final RestClient http;
 	private final JsonMapper json;

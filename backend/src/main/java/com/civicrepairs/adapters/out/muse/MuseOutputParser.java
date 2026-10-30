@@ -27,7 +27,8 @@ final class MuseOutputParser {
 			Set.of("damageType", "assetOwner", "urgency", "isValidUrbanDamage", "locationHints", "summary", "confidence");
 	private static final Set<String> SAME_DAMAGE_FIELDS = Set.of("sameDamage", "confidence", "reason");
 	private static final Set<String> AGENCY_RESPONSE_FIELDS = Set.of("classification", "summary", "confidence");
-	private static final Set<String> REPAIR_FIELDS = Set.of("sameLocation", "judgement", "confidence", "reason");
+	private static final Set<String> REPAIR_FIELDS = Set.of("sameLocation", "damageSpotVisible", "judgement", "confidence",
+			"reason");
 	static final int MAX_SUMMARY = 280;
 	static final int MAX_REASON = 280;
 	static final int MAX_HINTS = 5;
@@ -79,11 +80,16 @@ final class MuseOutputParser {
 				probability(node, "confidence"));
 	}
 
-	/** A different place is never a verdict on the repair, whatever the model says. */
+	/**
+	 * A different place, or a photo that does not show where the damage was, is never a verdict on the repair,
+	 * whatever the model says.
+	 */
 	RepairVerdict repair(String content) {
 		JsonNode node = object(content, REPAIR_FIELDS);
 		var judgement = enumValue(RepairVerdict.Judgement.class, text(node, "judgement"));
-		if (!bool(node, "sameLocation")) {
+		boolean sameLocation = bool(node, "sameLocation");
+		boolean spotVisible = bool(node, "damageSpotVisible");
+		if (!sameLocation || !spotVisible) {
 			judgement = RepairVerdict.Judgement.INCONCLUSIVE;
 		}
 		return new RepairVerdict(judgement, probability(node, "confidence"), boundedText(node, "reason", MAX_REASON));
