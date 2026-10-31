@@ -2171,3 +2171,10 @@ a.issue-popup-action {
 .admin-grid {
   align-items: start;
 }
+
+/* Phones: the logo alone, so the four navigation buttons fit. */
+@media (max-width: 440px) {
+  .brand-text {
+    display: none;
+  }
+}

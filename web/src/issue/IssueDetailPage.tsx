@@ -71,7 +71,7 @@ export function IssueDetailPage({ issueId }: { issueId: string | null }) {
   }, [load])
 
   const back = (
-    <a className="back-link" href={href('/')}>
+    <a className="back-link" href={href('/mapa')}>
       <Icon name="arrowLeft" size={16} />
       Volver al mapa
     </a>

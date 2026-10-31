@@ -164,7 +164,7 @@ Tenemos **$150 en créditos para todo el hackathon**: desarrollo, evaluación y 
 
 ## Cuentas de ciudadanos
 
-- **La web exige cuenta para reportar**; el mapa es público. El registro pide **solo lo mínimo** (nombre para mostrar, correo, contraseña).
+- **La web exige cuenta para reportar**; el mapa es público. Sin sesión, `#/` muestra la landing (`web/src/landing/`, animaciones que se apagan con `prefers-reduced-motion`); el mapa vive en `#/mapa` y, con sesión, también en `#/`. El registro pide **solo lo mínimo** (nombre para mostrar, correo, contraseña).
 - **Datos para radicar** (decisión del 2026-10-27, reemplaza "la petición sale a nombre de la plataforma"): opcionales, se piden solo cuando el ciudadano decide radicar. Tipo y número de documento, nombres, apellidos, celular y dirección opcional (`FilerProfile`). Se guardan **cifrados con AES-256-GCM** (`PERSONAL_DATA_KEY`; sin clave, la radicación queda apagada) y **solo se comparten con la entidad ante la que se radica, al radicar**. Cada consentimiento (guardar y compartir) registra la versión de la política aceptada; el backend rechaza versiones viejas (`PrivacyPolicy.CURRENT_VERSION` = `web/src/privacy/policy.ts`).
 - La política de tratamiento de datos (Ley 1581 de 2012) vive en `web/src/privacy/PrivacyPolicyPage.tsx` (`#/privacidad`). Responsable: el equipo del hackathon. Si cambia el texto, subir la versión en ambos lados.
 - Desde WhatsApp no se piden datos personales: el bot envía el enlace `#/radicar?issue=<id>` de la web.
@@ -262,4 +262,4 @@ Métricas que se reportan en el README: acierto del tipo de daño, rechazo de fo
 - [x] Repositorio: `github.com/dvchinx/Meta-Hackathon`.
 - [x] Registro A de `civic.jesusflorez.cloud` y ejecución de `deploy/civic-add-ssl-domain.sh`.
 - [x] Primer despliegue: crear `/opt/civic-repairs/.env` en el VPS y los secretos `VPS_*` en GitHub.
-- [ ] Cargar en producción los daños de ejemplo (`infra/seed/`).
+- [x] Cargar en producción los daños de ejemplo (`infra/seed/`), 2026-10-30.

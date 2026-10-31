@@ -55,7 +55,7 @@ export function PetitionPage({ petitionId }: { petitionId: string | null }) {
   const p = d.petitioner
   const damage = DAMAGE_LABELS[d.damageType].toLowerCase()
   const where = d.locality ? `, localidad de ${d.locality}` : ''
-  const mapUrl = `${window.location.origin}/${href('/')}`
+  const mapUrl = `${window.location.origin}/${href('/mapa')}`
 
   return (
     <div className="page">

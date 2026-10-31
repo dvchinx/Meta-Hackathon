@@ -12,6 +12,7 @@ import { ResetPasswordPage } from './auth/ResetPasswordPage'
 import { UserMenu } from './auth/UserMenu'
 import { VerifyEmailPage } from './auth/VerifyEmailPage'
 import { localitiesOf, matches, NO_FILTERS, within, type Bounds, type IssueFilters } from './issues/filters'
+import { LandingPage } from './landing/LandingPage'
 import type { IssueSummary } from './issues/types'
 import type { EndorseHandler, MapFocus } from './map/IssueMap'
 import { MapPanel } from './map/MapPanel'
@@ -54,7 +55,8 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  const onMap = route.path === '/'
+  // "/" is the landing page until someone signs in, then the map; "/mapa" is always the map.
+  const onMap = route.path === '/mapa' || (route.path === '/' && auth.status === 'signedIn')
 
   // Reload every time the map is shown, so a just-confirmed report appears.
   useEffect(() => {
@@ -78,13 +80,13 @@ function App() {
   const visible = useMemo(() => (bounds ? filtered.filter((i) => within(i, bounds)) : filtered), [filtered, bounds])
   const localities = useMemo(() => localitiesOf(issues), [issues])
 
-  const showMap = useCallback(() => navigate('/'), [])
+  const showMap = useCallback(() => navigate('/mapa'), [])
   const select = useCallback((issue: IssueSummary) => setFocus({ id: issue.id, nonce: Date.now() }), [])
 
   const endorse = useCallback<EndorseHandler>(
     async (issue) => {
       if (auth.status !== 'signedIn') {
-        navigate('/entrar', { next: '/' })
+        navigate('/entrar', { next: '/mapa' })
         return null
       }
       if (!auth.user.emailVerified) {
@@ -106,6 +108,9 @@ function App() {
   const next = route.query.get('next')
   let page: React.ReactNode
   switch (route.path) {
+    case '/':
+      page = auth.status === 'loading' ? loading : <LandingPage />
+      break
     case '/reportar':
       page = (
         <RequireAccount next="/reportar">
@@ -177,7 +182,7 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <a className="brand" href="#/">
+        <a className="brand" href="#/" aria-label="Daños urbanos, inicio">
           <img src={logo} alt="" />
           <span className="brand-text">
             <span className="brand-name">Daños urbanos</span>
@@ -185,7 +190,7 @@ function App() {
           </span>
         </a>
         <nav className="topbar-nav" aria-label="Principal">
-          <a className="button button-ghost" href="#/" aria-label="Mapa" aria-current={onMap ? 'page' : undefined}>
+          <a className="button button-ghost" href={href('/mapa')} aria-label="Mapa" aria-current={onMap ? 'page' : undefined}>
             <Icon name="map" size={18} />
             <span className="nav-label">Mapa</span>
           </a>

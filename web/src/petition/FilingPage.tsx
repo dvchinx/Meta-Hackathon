@@ -50,7 +50,7 @@ export function FilingPage({ issueId }: { issueId: string | null }) {
   }
 
   const back = (
-    <a className="back-link" href={href('/')}>
+    <a className="back-link" href={href('/mapa')}>
       <Icon name="arrowLeft" size={16} />
       Volver al mapa
     </a>
@@ -96,7 +96,7 @@ export function FilingPage({ issueId }: { issueId: string | null }) {
             <a className="button button-primary" href={href('/peticion', { id: receipt.petitionId })}>
               Ver e imprimir la petición
             </a>
-            <a className="button button-secondary" href={href('/')}>
+            <a className="button button-secondary" href={href('/mapa')}>
               <Icon name="map" size={18} />
               Volver al mapa
             </a>

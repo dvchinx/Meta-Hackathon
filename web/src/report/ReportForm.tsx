@@ -280,7 +280,7 @@ export function ReportForm({ onShowMap }: { onShowMap: () => void }) {
   return (
     <div className="page">
       <header className="page-header">
-        <a className="back-link" href="#/">
+        <a className="back-link" href={href('/mapa')}>
           <Icon name="arrowLeft" size={16} />
           Volver al mapa
         </a>
